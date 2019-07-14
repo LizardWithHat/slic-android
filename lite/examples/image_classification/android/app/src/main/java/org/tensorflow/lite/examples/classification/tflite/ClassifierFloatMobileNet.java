@@ -42,6 +42,7 @@ public class ClassifierFloatMobileNet extends Classifier {
     labelProbArray = new float[1][getNumLabels()];
   }
 
+  // Als Eingabe wird ein Bild im Format 224x224 Pixeln erwartet, bei dem die Pixel-Farbwerte zwischen 0 und 1 liegen. Jedes Pixel wird als 3 float64 (Double Precision) abgebildet.
   @Override
   public int getImageSizeX() {
     return 224;
@@ -54,10 +55,7 @@ public class ClassifierFloatMobileNet extends Classifier {
 
   @Override
   protected String getModelPath() {
-    // you can download this file from
-    // see build.gradle for where to obtain this file. It should be auto
-    // downloaded into assets.
-    return "mobilenet_v1_1.0_224.tflite";
+    return "skin-cancer-mnist-with-mobilenetv2.tflite";
   }
 
   @Override
@@ -71,10 +69,10 @@ public class ClassifierFloatMobileNet extends Classifier {
   }
 
   @Override
-  protected void addPixelValue(int pixelValue) {
-    imgData.putFloat((((pixelValue >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-    imgData.putFloat((((pixelValue >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-    imgData.putFloat(((pixelValue & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+  protected void addPixelValue(int pixelValue, float extremeValues[]) {
+    imgData.putFloat(((pixelValue >> 16) & 0xFF) - extremeValues[0] / (extremeValues[1] - extremeValues[0]));
+    imgData.putFloat(((pixelValue >> 8) & 0xFF) - extremeValues[2] / (extremeValues[3] - extremeValues[2]));
+    imgData.putFloat(((pixelValue) & 0xFF) - extremeValues[4] / (extremeValues[5] - extremeValues[4]));
   }
 
   @Override

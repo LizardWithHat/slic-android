@@ -18,6 +18,7 @@ package org.tensorflow.lite.examples.classification.tflite;
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -55,7 +56,7 @@ public abstract class Classifier {
   }
 
   /** Number of results to show in the UI. */
-  private static final int MAX_RESULTS = 3;
+  private static final int MAX_RESULTS = 7;
 
   /** Dimensions of inputs. */
   private static final int DIM_BATCH_SIZE = 1;
@@ -94,11 +95,7 @@ public abstract class Classifier {
    */
   public static Classifier create(Activity activity, Model model, Device device, int numThreads)
       throws IOException {
-    if (model == Model.QUANTIZED) {
-      return new ClassifierQuantizedMobileNet(activity, device, numThreads);
-    } else {
       return new ClassifierFloatMobileNet(activity, device, numThreads);
-    }
   }
 
   /** An immutable result returned by a Classifier describing what was recognized. */
@@ -231,11 +228,29 @@ public abstract class Classifier {
     bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
     // Convert the image to floating point.
     int pixel = 0;
+    int minR = 256, minG = 256, minB = 256;
+    int maxR = -1, maxG = -1, maxB = -1;
     long startTime = SystemClock.uptimeMillis();
     for (int i = 0; i < getImageSizeX(); ++i) {
       for (int j = 0; j < getImageSizeY(); ++j) {
+        int R = (intValues[pixel] >> 16) & 0xff;
+        if(minR > R) minR = R;
+        if(maxR < R) maxR = R;
+        int G = (intValues[pixel] >>  8) & 0xff;
+        if(minG > G) minG = G;
+        if(maxG < G) maxG = G;
+
+        int B = (intValues[pixel++]    ) & 0xff;
+        if(minB > B) minB = B;
+        if(maxB < B) maxB = B;
+      }
+    }
+    float extremeValues[] = {minR, maxR, minG, maxG, minB, maxB};
+    pixel = 0;
+    for (int i = 0; i < getImageSizeX(); ++i) {
+      for (int j = 0; j < getImageSizeY(); ++j) {
         final int val = intValues[pixel++];
-        addPixelValue(val);
+        addPixelValue(val, extremeValues);
       }
     }
     long endTime = SystemClock.uptimeMillis();
@@ -340,7 +355,7 @@ public abstract class Classifier {
    *
    * @param pixelValue
    */
-  protected abstract void addPixelValue(int pixelValue);
+  protected abstract void addPixelValue(int pixelValue, float[] extremeValues);
 
   /**
    * Read the probability value for the specified label This is either the original value as it was
