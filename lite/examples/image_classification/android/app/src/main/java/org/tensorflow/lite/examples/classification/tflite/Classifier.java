@@ -44,7 +44,8 @@ public abstract class Classifier {
 
   /** The model type used for classification. */
   public enum Model {
-    FLOAT,
+    DOMINIK,
+    KAGGLE,
     QUANTIZED,
   }
 
@@ -94,8 +95,12 @@ public abstract class Classifier {
    * @return A classifier with the desired configuration.
    */
   public static Classifier create(Activity activity, Model model, Device device, int numThreads)
-      throws IOException {
+          throws IOException {
+    if (model == Model.DOMINIK) {
       return new ClassifierFloatMobileNet(activity, device, numThreads);
+    } else {
+      return new ClassifierFloatMobileNetWithMeanStd(activity, device, numThreads);
+    }
   }
 
   /** An immutable result returned by a Classifier describing what was recognized. */
