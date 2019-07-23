@@ -68,6 +68,8 @@ public abstract class CameraActivity extends AppCompatActivity
   private static final int PERMISSIONS_REQUEST = 1;
 
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
+  // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
+  // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
   protected int previewWidth = 0;
   protected int previewHeight = 0;
   private Handler handler;

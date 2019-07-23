@@ -51,6 +51,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -344,6 +345,11 @@ public class CameraConnectionFragment extends Fragment {
       } else {
         textureView.setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
       }
+
+      // If flash available, show button
+      if(characteristics.get(characteristics.FLASH_INFO_AVAILABLE)){
+        getActivity().findViewById(R.id.butFlashToggle).setVisibility(View.VISIBLE);
+      }
     } catch (final CameraAccessException e) {
       LOGGER.e(e, "Exception!");
     } catch (final NullPointerException e) {
@@ -464,9 +470,37 @@ public class CameraConnectionFragment extends Fragment {
                 previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                // Flash is automatically enabled when necessary.
+                // Flash is turned off by default.
                 previewRequestBuilder.set(
-                    CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                previewRequestBuilder.set(
+                        CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+
+                // Registriere onClickListener für Blitz-Toggle Button
+                Activity activity = getActivity();
+                ImageButton flashToggleButton = activity.findViewById(R.id.butFlashToggle);
+                flashToggleButton.setOnClickListener(new View.OnClickListener(){
+                  public void onClick(View v){
+                      if(previewRequestBuilder.get(CaptureRequest.FLASH_MODE) == CaptureRequest.FLASH_MODE_OFF) {
+                        // Blitz ist zurzeit aus
+                        flashToggleButton.setImageDrawable(activity.getDrawable(R.drawable.flash_off));
+                        previewRequestBuilder.set(
+                                CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                      } else {
+                        flashToggleButton.setImageDrawable(activity.getDrawable(R.drawable.flash_on));
+                        previewRequestBuilder.set(
+                                CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                      }
+                      previewRequest = previewRequestBuilder.build();
+                    try {
+                      captureSession.setRepeatingRequest(
+                              previewRequest, captureCallback, backgroundHandler);
+                    } catch (CameraAccessException e) {
+                      LOGGER.e(e, "Exception!");
+                    }
+                  }
+                });
+
 
                 // Finally, we start displaying the camera preview.
                 previewRequest = previewRequestBuilder.build();
