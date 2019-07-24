@@ -39,4 +39,8 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly'
     // Use local TensorFlow library
     // implementation 'org.tensorflow:tensorflow-lite-local:0.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Preference Library for Option Menu
+    implementation 'androidx.preference:preference:1.1.0-rc01'
 }

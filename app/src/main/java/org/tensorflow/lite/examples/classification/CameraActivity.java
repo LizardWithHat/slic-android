@@ -19,6 +19,7 @@ package org.tensorflow.lite.examples.classification;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -45,6 +46,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -54,6 +56,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
+import org.tensorflow.lite.examples.classification.preferences.PreferenceActivity;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Recognition;
@@ -100,6 +103,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private Spinner modelSpinner;
   private Spinner deviceSpinner;
   private TextView threadsTextView;
+  private ImageButton butSettings;
 
   private Model model = Model.DOMINIK;
   private Device device = Device.CPU;
@@ -131,8 +135,13 @@ public abstract class CameraActivity extends AppCompatActivity
     gestureLayout = findViewById(R.id.gesture_layout);
     sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
     bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
+    butSettings = findViewById(R.id.butPreferences);
+    butSettings.setOnClickListener( v -> {
+        Intent i = new Intent(this, PreferenceActivity.class);
+        startActivity(i);
+    });
 
-    ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
+            ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
     vto.addOnGlobalLayoutListener(
         new ViewTreeObserver.OnGlobalLayoutListener() {
           @Override

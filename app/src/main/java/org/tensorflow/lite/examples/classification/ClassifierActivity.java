@@ -16,6 +16,8 @@
 
 package org.tensorflow.lite.examples.classification;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -23,9 +25,11 @@ import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import java.io.IOException;
@@ -176,16 +180,23 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   }
 
   public void drawRectangle(int inputWidth, int inputHeight){
-    // Draw targeting Rectangle
     TargetView targetLayout = findViewById(R.id.targetLayout);
     TextureView textureView = findViewById(R.id.texture);
-    //Input wird noch gedreht
+    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    if(!sharedPreferences.getBoolean(getString(R.string.target_square_preference_key), true)){
+       targetLayout.setVisibility(View.INVISIBLE);
+       return;
+    }
+    // Draw targeting Rectangle
+    // Input wird noch gedreht
     targetLayout.setLayoutParams(new RelativeLayout.LayoutParams(
             textureView.getMeasuredWidth(),
             textureView.getMeasuredHeight()
     ));
     targetLayout.setInputHeight(inputHeight);
     targetLayout.setInputWidth(inputWidth);
+    targetLayout.setVisibility(View.VISIBLE);
     targetLayout.bringToFront();
   }
 }
