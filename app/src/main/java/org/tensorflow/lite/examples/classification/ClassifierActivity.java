@@ -25,9 +25,13 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.TextureView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.List;
+
+import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
@@ -104,6 +108,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
+    if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()) );
 
     runInBackground(
         new Runnable() {
@@ -168,5 +173,19 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     } catch (IOException e) {
       LOGGER.e(e, "Failed to create classifier.");
     }
+  }
+
+  public void drawRectangle(int inputWidth, int inputHeight){
+    // Draw targeting Rectangle
+    TargetView targetLayout = findViewById(R.id.targetLayout);
+    TextureView textureView = findViewById(R.id.texture);
+    //Input wird noch gedreht
+    targetLayout.setLayoutParams(new RelativeLayout.LayoutParams(
+            textureView.getMeasuredWidth(),
+            textureView.getMeasuredHeight()
+    ));
+    targetLayout.setInputHeight(inputHeight);
+    targetLayout.setInputWidth(inputWidth);
+    targetLayout.bringToFront();
   }
 }
