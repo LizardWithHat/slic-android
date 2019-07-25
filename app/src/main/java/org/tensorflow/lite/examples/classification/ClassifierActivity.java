@@ -16,24 +16,40 @@
 
 package org.tensorflow.lite.examples.classification;
 
-import android.content.Context;
+import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.TextureView;
 import android.view.View;
+import android.webkit.PermissionRequest;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
@@ -48,6 +64,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private static final boolean MAINTAIN_ASPECT = true;
   private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
   private static final float TEXT_SIZE_DIP = 10;
+  private static final int PERMISSIONS_REQUEST = 1;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
@@ -57,8 +74,32 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Matrix frameToCropTransform;
   private Matrix cropToFrameTransform;
   private BorderedText borderedText;
+  private ScheduledThreadPoolExecutor poolScheduler;
+  private SharedPreferences sharedPreferences;
+  private SharedPreferences.OnSharedPreferenceChangeListener listener;
+  private Runnable pictureRunnable;
+  private Runnable dataRunnable;
 
   @Override
+  public void onCreate(Bundle savedInstance){
+      super.onCreate(savedInstance);
+      sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+      askForPermissions();
+      poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+      setUpPictureSaveInterval();
+      setUpSendDataInterval();
+      listener = (sharedPreferences, key) -> {
+          if (getString(R.string.interval_collect_picture_preference_key).equals(key)) {
+              setUpPictureSaveInterval();
+          } else if(getString(R.string.interval_send_data_preference_key).equals(key) |
+          getString(R.string.switch_auto_send_preference_key).equals(key)){
+              setUpSendDataInterval();
+          }
+      };
+      sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+  }
+
+    @Override
   protected int getLayoutId() {
     return R.layout.camera_connection_fragment;
   }
@@ -182,7 +223,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   public void drawRectangle(int inputWidth, int inputHeight){
     TargetView targetLayout = findViewById(R.id.targetLayout);
     TextureView textureView = findViewById(R.id.texture);
-    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     if(!sharedPreferences.getBoolean(getString(R.string.target_square_preference_key), true)){
        targetLayout.setVisibility(View.INVISIBLE);
@@ -198,5 +238,77 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     targetLayout.setInputWidth(inputWidth);
     targetLayout.setVisibility(View.VISIBLE);
     targetLayout.bringToFront();
+  }
+
+  private Runnable createImageSaverRunnable(){
+      if(pictureRunnable == null) {
+          pictureRunnable = new Runnable() {
+              File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+
+              @Override
+              public void run() {
+                  if (croppedBitmap == null | !isExternalStorageWritable()) return;
+                  destination.mkdir();
+                  File destinationFile = new File(destination, "picture_" + System.currentTimeMillis() + ".jpg");
+                  Bitmap copy = Bitmap.createBitmap(croppedBitmap);
+                  try {
+                      FileOutputStream out = new FileOutputStream(destinationFile);
+                      copy.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                  } catch (FileNotFoundException e) {
+                      LOGGER.e("Error saving Image: " + e.getMessage());
+                  }
+              }
+          };
+      }
+      return pictureRunnable;
+  }
+
+  private Runnable createSendDataRunnable(){
+      if(dataRunnable == null) {
+          dataRunnable = new Runnable() {
+              @Override
+              public void run() {
+                  LOGGER.d("Ich sende Daten!");
+              }
+          };
+      }
+      return dataRunnable;
+  }
+
+  public boolean isExternalStorageWritable() {
+      String state = Environment.getExternalStorageState();
+      if (Environment.MEDIA_MOUNTED.equals(state)) {
+          return true;
+      }
+      return false;
+  }
+
+  private void askForPermissions(){
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+              PackageManager.PERMISSION_GRANTED ||
+              ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) !=
+                      PackageManager.PERMISSION_GRANTED )
+          ActivityCompat.requestPermissions(this,
+                  new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                          Manifest.permission.CAMERA}, PERMISSIONS_REQUEST);
+  }
+  private void setUpPictureSaveInterval(){
+      poolScheduler.remove(pictureRunnable);
+      int imageSaveInterval = Integer.parseInt(
+              sharedPreferences.getString(getString(R.string.interval_collect_picture_preference_key), "0"));
+      if(imageSaveInterval != 0) {
+          poolScheduler.scheduleWithFixedDelay(createImageSaverRunnable(),
+                  5 ,imageSaveInterval, TimeUnit.SECONDS);
+      }
+  }
+
+  private void setUpSendDataInterval(){
+      poolScheduler.remove(dataRunnable);
+      int sendDataInterval = Integer.parseInt(
+              sharedPreferences.getString(getString(R.string.interval_send_data_preference_key), "0"));
+      if(sendDataInterval != 0) {
+          poolScheduler.scheduleWithFixedDelay(createSendDataRunnable(),
+                  0, sendDataInterval, TimeUnit.SECONDS);
+      }
   }
 }
