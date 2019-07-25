@@ -306,7 +306,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       poolScheduler.remove(dataRunnable);
       int sendDataInterval = Integer.parseInt(
               sharedPreferences.getString(getString(R.string.interval_send_data_preference_key), "0"));
-      if(sendDataInterval != 0) {
+      if(sendDataInterval != 0
+              & sharedPreferences.getBoolean(getString(R.string.switch_auto_send_preference_key), false)) {
           poolScheduler.scheduleWithFixedDelay(createSendDataRunnable(),
                   0, sendDataInterval, TimeUnit.SECONDS);
       }
