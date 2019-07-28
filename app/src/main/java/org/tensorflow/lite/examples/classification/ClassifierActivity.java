@@ -16,10 +16,8 @@
 
 package org.tensorflow.lite.examples.classification;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -40,8 +38,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
@@ -349,7 +345,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
     protected void writeCsvLine(String[] data){
         if(currentCsvFile != null){
-            FileWriter csvWriter = null;
+            FileWriter csvWriter;
             try {
                 csvWriter = new FileWriter(currentCsvFile, true);
                 String line = "";
@@ -357,10 +353,10 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                     if(line.isEmpty()){
                         line = s;
                     }else {
-                        line = line.join(",", line, s);
+                        line = String.join(",", line, s);
                     }
                 }
-                csvWriter.append(line+"\n");
+                csvWriter.append(line).append("\n");
                 csvWriter.flush();
                 csvWriter.close();
             } catch (IOException e) {
