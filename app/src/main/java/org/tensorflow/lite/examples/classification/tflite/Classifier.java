@@ -404,4 +404,6 @@ public abstract class Classifier {
   protected int getNumLabels() {
     return labels.size();
   }
+
+  public abstract String getDataDetailPath();
 }

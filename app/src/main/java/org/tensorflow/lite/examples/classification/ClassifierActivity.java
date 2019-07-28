@@ -16,6 +16,10 @@
 
 package org.tensorflow.lite.examples.classification;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -23,22 +27,42 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-import java.io.IOException;
-import java.util.List;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
+import org.tensorflow.lite.examples.classification.misc.DataDetail;
 import org.tensorflow.lite.examples.classification.tflite.Classifier;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
@@ -47,6 +71,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           Resources.getSystem().getDisplayMetrics().widthPixels,
           Resources.getSystem().getDisplayMetrics().heightPixels);
   private static final float TEXT_SIZE_DIP = 10;
+  private static final int PERMISSIONS_REQUEST = 1;
+  private static final int PATIENT_DATA_REQUEST = 2;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
@@ -56,8 +82,45 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Matrix frameToCropTransform;
   private Matrix cropToFrameTransform;
   private BorderedText borderedText;
+  private ScheduledThreadPoolExecutor poolScheduler;
+  private SharedPreferences sharedPreferences;
+  private SharedPreferences.OnSharedPreferenceChangeListener listener;
+  private Runnable pictureRunnable;
+  private Runnable dataRunnable;
+  private ImageButton butPatientData;
 
   @Override
+  public void onCreate(Bundle savedInstance){
+      super.onCreate(savedInstance);
+      sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+      askForPermissions();
+      poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+      setUpPictureSaveInterval();
+      setUpSendDataInterval();
+      listener = (sharedPreferences, key) -> {
+          if (getString(R.string.interval_collect_picture_preference_key).equals(key)) {
+              setUpPictureSaveInterval();
+          } else if(getString(R.string.interval_send_data_preference_key).equals(key) |
+          getString(R.string.switch_auto_send_preference_key).equals(key)){
+              setUpSendDataInterval();
+          }
+      };
+      sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+
+      //Erzeuge einzigartige Installations-ID, falls nicht vorhanden
+      if(sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)").equals("(NULL)")){
+          sharedPreferences.edit().putString("UNIQUE_INSTALL", UUID.randomUUID().toString()).apply();
+      }
+
+      butPatientData = findViewById(R.id.butPatientData);
+      butPatientData.setOnClickListener(v -> {
+          Intent i = new Intent(this, PatientDataInputActivity.class);
+          i.putExtra(PatientDataInputActivity.JSONFILENAME, classifier.getDataDetailPath());
+          startActivityForResult(i, PATIENT_DATA_REQUEST);
+      });
+  }
+
+    @Override
   protected int getLayoutId() {
     return R.layout.camera_connection_fragment;
   }
@@ -179,16 +242,148 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   }
 
   public void drawRectangle(int inputWidth, int inputHeight){
-    // Draw targeting Rectangle
     TargetView targetLayout = findViewById(R.id.targetLayout);
     TextureView textureView = findViewById(R.id.texture);
-    //Input wird noch gedreht
+
+    if(!sharedPreferences.getBoolean(getString(R.string.target_square_preference_key), true)){
+       targetLayout.setVisibility(View.INVISIBLE);
+       return;
+    }
+    // Draw targeting Rectangle
+    // Input wird noch gedreht
     targetLayout.setLayoutParams(new RelativeLayout.LayoutParams(
             textureView.getMeasuredWidth(),
             textureView.getMeasuredHeight()
     ));
     targetLayout.setInputHeight(inputHeight);
     targetLayout.setInputWidth(inputWidth);
+    targetLayout.setVisibility(View.VISIBLE);
     targetLayout.bringToFront();
   }
+
+  private Runnable createImageSaverRunnable(){
+      if(pictureRunnable == null) {
+          pictureRunnable = new Runnable() {
+              File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+
+              @Override
+              public void run() {
+                  if (croppedBitmap == null | !isExternalStorageWritable()) return;
+                  destination.mkdir();
+                  File destinationFile = new File(destination, "picture_" + System.currentTimeMillis() + ".jpg");
+                  Bitmap copy = Bitmap.createBitmap(croppedBitmap);
+                  try {
+                      FileOutputStream out = new FileOutputStream(destinationFile);
+                      copy.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                  } catch (FileNotFoundException e) {
+                      LOGGER.e("Error saving Image: " + e.getMessage());
+                  }
+                  // If Patient data entered, write metadata to csv file
+                  if(currentPatientData != null){
+                      currentPatientData[1] = destinationFile.getName();
+                      writeCsvLine(currentPatientData);
+                  }
+              }
+          };
+      }
+      return pictureRunnable;
+  }
+
+  private Runnable createSendDataRunnable(){
+      if(dataRunnable == null) {
+          dataRunnable = new Runnable() {
+              @Override
+              public void run() {
+                  LOGGER.d("Ich sende Daten!");
+              }
+          };
+      }
+      return dataRunnable;
+  }
+
+  public boolean isExternalStorageWritable() {
+      String state = Environment.getExternalStorageState();
+      if (Environment.MEDIA_MOUNTED.equals(state)) {
+          return true;
+      }
+      return false;
+  }
+
+  private void askForPermissions(){
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+              PackageManager.PERMISSION_GRANTED ||
+              ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) !=
+                      PackageManager.PERMISSION_GRANTED )
+          ActivityCompat.requestPermissions(this,
+                  new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
+  }
+  private void setUpPictureSaveInterval(){
+      poolScheduler.remove(pictureRunnable);
+      int imageSaveInterval = Integer.parseInt(
+              sharedPreferences.getString(getString(R.string.interval_collect_picture_preference_key), "0"));
+      if(imageSaveInterval != 0) {
+          poolScheduler.scheduleWithFixedDelay(createImageSaverRunnable(),
+                  5, imageSaveInterval, TimeUnit.SECONDS);
+      }
+  }
+
+  private void setUpSendDataInterval(){
+      poolScheduler.remove(dataRunnable);
+      int sendDataInterval = Integer.parseInt(
+              sharedPreferences.getString(getString(R.string.interval_send_data_preference_key), "0"));
+      if(sendDataInterval != 0
+              & sharedPreferences.getBoolean(getString(R.string.switch_auto_send_preference_key), false)) {
+          poolScheduler.scheduleWithFixedDelay(createSendDataRunnable(),
+                  0, sendDataInterval, TimeUnit.SECONDS);
+      }
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+      if(requestCode == PATIENT_DATA_REQUEST){
+          if(resultCode == RESULT_OK){
+              ArrayList<DataDetail> patientData = data.getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
+
+              // Built Header and Patient Data text arrays from ArrayList
+              ArrayList<String> patientDataList = new ArrayList<>();
+              ArrayList<String> patientDataHeaderList = new ArrayList<>();
+              for(DataDetail s : patientData){
+                  patientDataList.add(s.getValue());
+                  patientDataHeaderList.add(s.getKey());
+
+              }
+              currentPatientData = patientDataList.toArray(new String[0]);
+              String[] patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
+
+              // Set new CSV File
+              File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+              currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
+              // Write Header to new CSV
+              writeCsvLine(patientDataHeaders);
+          }
+        }
+      super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    protected void writeCsvLine(String[] data){
+        if(currentCsvFile != null){
+            FileWriter csvWriter = null;
+            try {
+                csvWriter = new FileWriter(currentCsvFile, true);
+                String line = "";
+                for(String s : data){
+                    if(line.isEmpty()){
+                        line = s;
+                    }else {
+                        line = line.join(",", line, s);
+                    }
+                }
+                csvWriter.append(line+"\n");
+                csvWriter.flush();
+                csvWriter.close();
+            } catch (IOException e) {
+                LOGGER.e("Error writing CSV: " + e.getMessage());
+            }
+        }
+    }
 }

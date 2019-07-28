@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/common_settings_title">
+
+        <SwitchPreference
+            android:key="@string/target_square_preference_key"
+            android:title="@string/target_square_preference_text"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:summary="@string/send_and_collect_data_preference_summary"
+        android:title="@string/send_and_collect_data_preference_title" >
+
+        <SwitchPreference
+            android:key="@string/switch_auto_send_preference_key"
+            android:title="@string/checkbox_auto_send_preference_text"
+            android:defaultValue="false"/>
+
+        <ListPreference
+            android:key="@string/interval_send_data_preference_key"
+            android:title="@string/interval_send_data_preference_text"
+            android:summary="%s"
+            android:entries="@array/interval_send_data_options"
+            android:entryValues="@array/interval_send_data_values"
+            android:defaultValue="0"/>
+
+        <ListPreference
+            android:key="@string/interval_collect_picture_preference_key"
+            android:title="@string/interval_collect_picture_preference_text"
+            android:summary="%s"
+            android:entries="@array/interval_collect_picture_options"
+            android:entryValues="@array/interval_collect_picture_values"
+            android:defaultValue="0"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
