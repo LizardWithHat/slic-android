@@ -71,7 +71,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           Resources.getSystem().getDisplayMetrics().widthPixels,
           Resources.getSystem().getDisplayMetrics().heightPixels);
   private static final float TEXT_SIZE_DIP = 10;
-  private static final int PERMISSIONS_REQUEST = 1;
   private static final int PATIENT_DATA_REQUEST = 2;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
@@ -93,7 +92,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   public void onCreate(Bundle savedInstance){
       super.onCreate(savedInstance);
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-      askForPermissions();
       poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
       setUpPictureSaveInterval();
       setUpSendDataInterval();
@@ -268,7 +266,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
               @Override
               public void run() {
-                  if (croppedBitmap == null | !isExternalStorageWritable()) return;
+                  if (croppedBitmap == null) return;
                   destination.mkdir();
                   File destinationFile = new File(destination, "picture_" + System.currentTimeMillis() + ".jpg");
                   Bitmap copy = Bitmap.createBitmap(croppedBitmap);
@@ -301,22 +299,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       return dataRunnable;
   }
 
-  public boolean isExternalStorageWritable() {
-      String state = Environment.getExternalStorageState();
-      if (Environment.MEDIA_MOUNTED.equals(state)) {
-          return true;
-      }
-      return false;
-  }
-
-  private void askForPermissions(){
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-              PackageManager.PERMISSION_GRANTED ||
-              ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) !=
-                      PackageManager.PERMISSION_GRANTED )
-          ActivityCompat.requestPermissions(this,
-                  new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
-  }
   private void setUpPictureSaveInterval(){
       poolScheduler.remove(pictureRunnable);
       int imageSaveInterval = Integer.parseInt(
