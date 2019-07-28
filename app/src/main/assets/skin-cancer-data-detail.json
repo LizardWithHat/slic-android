@@ -1,0 +1,19 @@
+{
+		"data_details": {
+			"dx": {
+				"description" : "Diagnose"
+			},
+			"dx_type": {
+				"description" : "Diagnosetyp"
+			},
+			"age": {
+				"description" : "Alter"
+			},
+			"sex": {
+				"description" : "Geschlecht"
+			},
+			"localization": {
+				"description" : "Lokalisierung"
+			}
+		}
+}

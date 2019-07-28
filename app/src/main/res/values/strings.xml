@@ -36,4 +36,7 @@
     <string name="interval_send_data_preference_key">interval_send_data_preference_key</string>
     <string name="interval_collect_picture_preference_key">interval_collect_picture_preference_key</string>
     <string name="common_settings_title">Allgemeine Einstellungen</string>
+    <string name="save">Speichern</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="patient_data_input_title">Eingabe der Patientendaten</string>
 </resources>

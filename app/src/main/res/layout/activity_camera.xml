@@ -69,6 +69,16 @@
             android:layout_toStartOf="@+id/butPreferences"
             app:srcCompat="@drawable/flash_on" />
 
+        <ImageButton
+            android:id="@+id/butPatientData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/toolbar"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@+id/butFlashToggle"
+            app:srcCompat="@drawable/patientdata" />
+
 
         <ImageButton
             android:id="@+id/butPreferences"

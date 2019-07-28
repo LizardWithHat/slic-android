@@ -94,4 +94,7 @@ public class ClassifierFloatMobileNetWithMeanStd extends Classifier {
   protected void runInference() {
     tflite.run(imgData, labelProbArray);
   }
+
+  @Override
+  public String getDataDetailPath() { return "skin-cancer-data-detail.json"; }
 }
