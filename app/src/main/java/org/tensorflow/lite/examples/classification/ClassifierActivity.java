@@ -83,6 +83,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Runnable pictureRunnable;
   private Runnable dataRunnable;
   private ImageButton butPatientData;
+  private File destination;
 
   @Override
   public void onCreate(Bundle savedInstance){
@@ -112,6 +113,17 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           i.putExtra(PatientDataInputActivity.JSONFILENAME, classifier.getDataDetailPath());
           startActivityForResult(i, PATIENT_DATA_REQUEST);
       });
+
+      // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
+      destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+      if (destination.mkdir()){
+          File nomedia = new File(destination, ".nomedia");
+          try {
+              nomedia.createNewFile();
+          } catch (IOException e) {
+              LOGGER.e("Error creating .nomedia File: "+e.getMessage());
+          }
+      }
   }
 
     @Override
@@ -258,12 +270,10 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Runnable createImageSaverRunnable(){
       if(pictureRunnable == null) {
           pictureRunnable = new Runnable() {
-              File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
 
               @Override
               public void run() {
                   if (croppedBitmap == null) return;
-                  destination.mkdir();
                   File destinationFile = new File(destination, "picture_" + System.currentTimeMillis() + ".jpg");
                   Bitmap copy = Bitmap.createBitmap(croppedBitmap);
                   try {
