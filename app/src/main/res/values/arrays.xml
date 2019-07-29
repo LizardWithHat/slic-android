@@ -2,6 +2,7 @@
 <resources>
     <string-array name="interval_send_data_options">
         <item>Niemals</item>
+        <item>Jede 10 Sekunden</item>
         <item>Jede Minute</item>
         <item>Jede 2 Minuten</item>
         <item>Jede 5 Minuten</item>
@@ -9,6 +10,7 @@
 
     <string-array name="interval_send_data_values">
         <item>0</item>
+        <item>10</item>
         <item>60</item>
         <item>120</item>
         <item>300</item>
@@ -16,6 +18,7 @@
 
     <string-array name="interval_collect_picture_options">
         <item>Niemals</item>
+        <item>Jede 5 Sekunden</item>
         <item>Jede 30 Sekunden</item>
         <item>Jede Minute</item>
         <item>Jede 2 Minuten</item>
@@ -23,6 +26,7 @@
 
     <string-array name="interval_collect_picture_values">
         <item>0</item>
+        <item>5</item>
         <item>30</item>
         <item>60</item>
         <item>120</item>

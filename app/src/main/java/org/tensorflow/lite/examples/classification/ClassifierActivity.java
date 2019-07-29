@@ -48,7 +48,10 @@ import org.tensorflow.lite.examples.classification.tflite.Classifier;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -59,6 +62,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
@@ -84,14 +89,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Runnable dataRunnable;
   private ImageButton butPatientData;
   private File destination;
+  private String[] patientDataHeaders;
 
   @Override
   public void onCreate(Bundle savedInstance){
       super.onCreate(savedInstance);
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-      poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
-      setUpPictureSaveInterval();
-      setUpSendDataInterval();
       listener = (sharedPreferences, key) -> {
           if (getString(R.string.interval_collect_picture_preference_key).equals(key)) {
               setUpPictureSaveInterval();
@@ -124,6 +127,23 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
               LOGGER.e("Error creating .nomedia File: "+e.getMessage());
           }
       }
+  }
+
+  @Override
+  public void onPause(){
+      super.onPause();
+      // Stoppe und verwerfe alle Hintergrundtasks wenn App/diese Aktivität nicht im Vordergrund
+      poolScheduler.shutdownNow();
+  }
+
+  @Override
+  public void onResume(){
+      super.onResume();
+      // Neue Hintergrundtasks erstellen
+      poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+      poolScheduler.setRemoveOnCancelPolicy(true);
+      setUpPictureSaveInterval();
+      setUpSendDataInterval();
   }
 
     @Override
@@ -298,7 +318,38 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           dataRunnable = new Runnable() {
               @Override
               public void run() {
-                  LOGGER.d("Ich sende Daten!");
+                  // Zippe alle Dateien im Datenordner in ein Archiv mit Zeitstempel in "out" und "sende" sie
+                  File archiveFolder = new File(destination, "out");
+                  File archiveFile = new File(archiveFolder, "archive_"+System.currentTimeMillis()+".zip");
+                  File[] toBeArchived = destination.listFiles();
+                  archiveFolder.mkdir();
+                  BufferedInputStream in;
+                  FileOutputStream fileOut;
+                  ZipOutputStream zipOut;
+                  try {
+                      byte[] rawData = new byte[1024];
+                      fileOut = new FileOutputStream(archiveFile);
+                      zipOut = new ZipOutputStream(new BufferedOutputStream(fileOut));
+                      for(File f : toBeArchived){
+                          LOGGER.d("Archiving File "+f.getName());
+                          // Überspringe Unterordner (wie etwa "out" Ordner) und .nomedia-Datei
+                          if(f.isDirectory() || f.getName().equals(".nomedia")) continue;
+                          in = new BufferedInputStream(new FileInputStream(f), rawData.length);
+                          ZipEntry entry = new ZipEntry(f.getName());
+                          zipOut.putNextEntry(entry);
+                          int count;
+                          while((count = in.read(rawData, 0, rawData.length)) != -1) {
+                              zipOut.write(rawData, 0, count);
+                          }
+                          f.delete();
+                      }
+                      zipOut.close();
+                  } catch (Exception e){
+                      LOGGER.e(e.getMessage());
+                  }
+                  // CSV name bleibt gleich, Header müssen neu geschrieben werden
+                  writeCsvLine(patientDataHeaders);
+                  LOGGER.d("Ich zippe/sende Daten!");
               }
           };
       }
@@ -341,7 +392,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
               }
               currentPatientData = patientDataList.toArray(new String[0]);
-              String[] patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
+              patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
 
               // Set new CSV File
               File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
