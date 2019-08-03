@@ -84,7 +84,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private BorderedText borderedText;
   private ScheduledThreadPoolExecutor poolScheduler;
   private SharedPreferences sharedPreferences;
-  private SharedPreferences.OnSharedPreferenceChangeListener listener;
   private Runnable pictureRunnable;
   private Runnable dataRunnable;
   private ImageButton butPatientData;
@@ -95,15 +94,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   public void onCreate(Bundle savedInstance){
       super.onCreate(savedInstance);
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-      listener = (sharedPreferences, key) -> {
-          if (getString(R.string.interval_collect_picture_preference_key).equals(key)) {
-              setUpPictureSaveInterval();
-          } else if(getString(R.string.interval_send_data_preference_key).equals(key) |
-          getString(R.string.switch_auto_send_preference_key).equals(key)){
-              setUpSendDataInterval();
-          }
-      };
-      sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
 
       //Erzeuge einzigartige Installations-ID, falls nicht vorhanden
       if(sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)").equals("(NULL)")){
