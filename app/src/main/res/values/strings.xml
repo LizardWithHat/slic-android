@@ -38,5 +38,9 @@
     <string name="common_settings_title">Allgemeine Einstellungen</string>
     <string name="save">Speichern</string>
     <string name="cancel">Abbrechen</string>
+    <string name="set">Setzen</string>
     <string name="patient_data_input_title">Eingabe der Patientendaten</string>
+
+    <string name="choose_number">Bitte Nummer auswählen</string>
+    <string name="choose_list">Bitte Eintrag auswählen</string>
 </resources>

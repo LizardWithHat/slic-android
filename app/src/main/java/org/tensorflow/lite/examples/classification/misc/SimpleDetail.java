@@ -3,12 +3,12 @@ package org.tensorflow.lite.examples.classification.misc;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class DataDetail implements Parcelable {
+public class SimpleDetail implements Parcelable {
     private String key;
     private String description;
     private String value;
 
-    public DataDetail(String key, String description, String value){
+    public SimpleDetail(String key, String description, String value){
         this.key = key;
         this.description = description;
         this.value = value;
@@ -51,20 +51,20 @@ public class DataDetail implements Parcelable {
         dest.writeString(value);
     }
 
-    public static final Parcelable.Creator<DataDetail> CREATOR = new Parcelable.Creator<DataDetail>() {
-        public DataDetail createFromParcel(Parcel pc) {
-            return new DataDetail(pc);
+    public static final Parcelable.Creator<SimpleDetail> CREATOR = new Parcelable.Creator<SimpleDetail>() {
+        public SimpleDetail createFromParcel(Parcel pc) {
+            return new SimpleDetail(pc);
         }
-        public DataDetail[] newArray(int size) {
-            return new DataDetail[size];
+        public SimpleDetail[] newArray(int size) {
+            return new SimpleDetail[size];
         }
     };
 
-    public DataDetail(Parcel pc){
+    public SimpleDetail(Parcel pc){
         this.key = pc.readString();
         this.description = pc.readString();
         this.value = pc.readString();
     }
 
-    public DataDetail(){};
+    public SimpleDetail(){};
 }

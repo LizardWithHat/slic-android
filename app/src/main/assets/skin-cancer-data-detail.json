@@ -1,19 +1,48 @@
 {
-		"data_details": {
-			"dx": {
-				"description" : "Diagnose"
-			},
-			"dx_type": {
-				"description" : "Diagnosetyp"
-			},
-			"age": {
-				"description" : "Alter"
-			},
-			"sex": {
-				"description" : "Geschlecht"
-			},
-			"localization": {
-				"description" : "Lokalisierung"
-			}
-		}
+  "data_details": {
+    "dx": {
+      "description": "Diagnose" ,
+      "type": "input"
+    } ,
+    "dx_type": {
+      "description": "Diagnosetyp" ,
+      "type": "input"
+    } ,
+    "age": {
+      "description": "Alter" ,
+      "type": "interval" ,
+      "range": [0, 85],
+      "step": 5
+    } ,
+    "sex": {
+      "description": "Geschlecht" ,
+      "type": "choice" ,
+      "values": [
+        "unknown" ,
+        "female" ,
+        "male"
+      ]
+    } ,
+    "localization": {
+      "description": "Lokalisierung" ,
+      "type": "choice" ,
+      "values": [
+        "scalp" ,
+        "ear" ,
+        "face" ,
+        "back" ,
+        "trunk" ,
+        "chest" ,
+        "upper extremity" ,
+        "abdomen" ,
+        "unknown" ,
+        "lower extremity" ,
+        "genital" ,
+        "neck" ,
+        "hand" ,
+        "foot" ,
+        "acral"
+      ]
+    }
+  }
 }

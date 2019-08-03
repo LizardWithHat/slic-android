@@ -43,7 +43,7 @@ import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
-import org.tensorflow.lite.examples.classification.misc.DataDetail;
+import org.tensorflow.lite.examples.classification.misc.SimpleDetail;
 import org.tensorflow.lite.examples.classification.tflite.Classifier;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
@@ -381,12 +381,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
       if(requestCode == PATIENT_DATA_REQUEST){
           if(resultCode == RESULT_OK){
-              ArrayList<DataDetail> patientData = data.getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
+              ArrayList<SimpleDetail> patientData = data.getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
 
               // Built Header and Patient Data text arrays from ArrayList
               ArrayList<String> patientDataList = new ArrayList<>();
               ArrayList<String> patientDataHeaderList = new ArrayList<>();
-              for(DataDetail s : patientData){
+              for(SimpleDetail s : patientData){
                   patientDataList.add(s.getValue());
                   patientDataHeaderList.add(s.getKey());
 

@@ -14,14 +14,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.lite.examples.classification.env.Logger;
-import org.tensorflow.lite.examples.classification.misc.DataDetail;
+import org.tensorflow.lite.examples.classification.misc.ChoiceDetail;
+import org.tensorflow.lite.examples.classification.misc.IntervalDetail;
+import org.tensorflow.lite.examples.classification.misc.SimpleDetail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +40,7 @@ public class PatientDataInputActivity extends AppCompatActivity {
     public static final String RESULT_STRING = "patientdataresultstring";
     private static final Logger LOGGER = new Logger();
 
-    private ArrayList<DataDetail> patientData;
+    private ArrayList<SimpleDetail> patientData;
     private ListView lwDataDetails;
 
     @Override
@@ -71,9 +76,9 @@ public class PatientDataInputActivity extends AppCompatActivity {
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        patientData.add(new DataDetail("patient_id", "Patienten ID", sharedPreferences.
+        patientData.add(new SimpleDetail("patient_id", "Patienten ID", sharedPreferences.
                 getString("UNIQUE_INSTALL", "(NULL)") +"_"+ System.currentTimeMillis()));
-        patientData.add(new DataDetail("image_id", "Image ID", ""));
+        patientData.add(new SimpleDetail("image_id", "Image ID", ""));
 
         // lade JSON Datei aus Asset Ordner
         JSONObject jObj;
@@ -91,7 +96,27 @@ public class PatientDataInputActivity extends AppCompatActivity {
             while(i.hasNext()){
                 String key = i.next();
                 String description = detailRoot.getJSONObject(key).getString("description");
-                patientData.add(new DataDetail(key, description, ""));
+                String type = detailRoot.getJSONObject(key).getString("type");
+                switch(type){
+                    case "interval":
+                        JSONArray range = detailRoot.getJSONObject(key).optJSONArray("range");
+                        IntervalDetail intervalDetail = new IntervalDetail(key, description, "");
+                        intervalDetail.setStep(Integer.parseInt(detailRoot.getJSONObject(key).getString("step")));
+                        intervalDetail.setIntervalMin(range.optInt(0));
+                        intervalDetail.setIntervalMax(range.optInt(1));
+                        patientData.add(intervalDetail);
+                        break;
+                    case "choice":
+                        JSONArray choices = detailRoot.getJSONObject(key).optJSONArray("values");
+                        ChoiceDetail choiceDetail = new ChoiceDetail(key, description, "");
+                        for(int j = 0; j < choices.length(); j++){
+                            choiceDetail.addChoice(choices.getString(j));
+                        }
+                        patientData.add(choiceDetail);
+                        break;
+                    default:
+                        patientData.add(new SimpleDetail(key, description, ""));
+                }
             }
         } catch (IOException e){
             LOGGER.e("File Error: "+e.getMessage());
@@ -100,11 +125,11 @@ public class PatientDataInputActivity extends AppCompatActivity {
         }
     }
 
-    private class PatientDataAdapter extends ArrayAdapter<DataDetail>{
-        ArrayList<DataDetail> data;
+    private class PatientDataAdapter extends ArrayAdapter<SimpleDetail>{
+        ArrayList<SimpleDetail> data;
         Context context;
 
-        PatientDataAdapter(ArrayList<DataDetail> data, Context context){
+        PatientDataAdapter(ArrayList<SimpleDetail> data, Context context){
             super(context, R.layout.patient_data_input_item, data);
             this.data = data;
             this.context = context;
@@ -117,33 +142,66 @@ public class PatientDataInputActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent){
-            DataDetail dataRow = data.get(position);
+            SimpleDetail dataRow = data.get(position);
             ViewHolder vh;
+            vh = new ViewHolder();
 
-            if( convertView == null){
-                vh = new ViewHolder();
-
-                convertView = LayoutInflater.from(getContext()).
-                        inflate(R.layout.patient_data_input_item, parent, false);
-
-                vh.input = convertView.findViewById(R.id.tfItemInput);
-                vh.label = convertView.findViewById(R.id.tlItemTitle);
-
-                convertView.setTag(vh);
-            } else {
-                vh = (ViewHolder) convertView.getTag();
-            }
-
+            convertView = LayoutInflater.from(getContext()).
+                    inflate(R.layout.patient_data_input_item, parent, false);
+            vh.input = convertView.findViewById(R.id.tfItemInput);
+            vh.label = convertView.findViewById(R.id.tlItemTitle);
             vh.label.setText(dataRow.getDescription());
             vh.input.setHint(dataRow.getKey());
-            if(dataRow.getKey().equals("patient_id")) vh.input.setText(dataRow.getValue());
-            if(dataRow.getKey().equals("image_id")){
+            vh.input.setText(dataRow.getValue());
+            if(dataRow.getKey().equals("patient_id")) { vh.input.setText(dataRow.getValue()); }
+            else if(dataRow.getKey().equals("image_id")){
                 vh.input.setText("------------");
                 vh.input.setEnabled(false);
+            } else if(dataRow instanceof IntervalDetail){
+                // Feld nicht Editierbar, aber anklickbar für onClick-Methode stellen
+                vh.input.setFocusable(false);
+                vh.input.setFocusableInTouchMode(false);
+                vh.input.setClickable(false);
+
+                vh.input.setOnClickListener(v -> {
+                    View dialogView = getLayoutInflater().inflate(R.layout.number_picker_dialog_layout, null);
+                    NumberPicker numberPicker = dialogView.findViewById(R.id.numberPicker);
+
+                    int step = ((IntervalDetail) dataRow).getStep();
+                    int intervalMin = ((IntervalDetail) dataRow).getIntervalMin();
+                    int intervalMax = (((IntervalDetail) dataRow).getIntervalMax() - intervalMin) / step;
+                    NumberPicker.Formatter formatter = value -> Integer.toString((value * step)+intervalMin);
+                    numberPicker.setFormatter(formatter);
+                    numberPicker.setMinValue(intervalMin);
+                    numberPicker.setMaxValue(intervalMax);
+
+                    numberPicker.setWrapSelectorWheel(true);
+
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(PatientDataInputActivity.this);
+                    AlertDialog dialog;
+                    dialogBuilder.setView(dialogView);
+                    dialogBuilder.setTitle(getString(R.string.choose_number));
+                    dialogBuilder.setPositiveButton(getString(R.string.set), (dialog1, which) -> ((EditText) v).setText(Integer.toString(numberPicker.getValue() * step + intervalMin)));
+                    dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog12, which) -> dialog12.dismiss());
+                    dialog = dialogBuilder.create();
+                    dialog.show();
+                });
+            } else if(dataRow instanceof ChoiceDetail){
+                // Feld nicht Editierbar, aber anklickbar für onClick-Methode stellen
+                vh.input.setFocusable(false);
+                vh.input.setFocusableInTouchMode(false);
+                vh.input.setClickable(false);
+
+                vh.input.setOnClickListener(v -> {
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(PatientDataInputActivity.this);
+                    dialogBuilder.setTitle(getString(R.string.choose_list));
+                    String[] choices = ((ChoiceDetail) dataRow).getChoices().toArray(new String[0]);
+                    dialogBuilder.setItems(choices, (dialogInterface, i) -> ((EditText) v).setText(choices[i]));
+                    AlertDialog dialog = dialogBuilder.create();
+                    dialog.show();
+                });
             }
-
-            vh.input.addTextChangedListener(new TextWatcher(){
-
+            vh.input.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
@@ -157,6 +215,7 @@ public class PatientDataInputActivity extends AppCompatActivity {
                     dataRow.setValue(s.toString());
                 }
             });
+
 
             return convertView;
         }
