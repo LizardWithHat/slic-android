@@ -39,6 +39,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
@@ -82,11 +84,11 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Matrix frameToCropTransform;
   private Matrix cropToFrameTransform;
   private BorderedText borderedText;
-  private ScheduledThreadPoolExecutor poolScheduler;
   private SharedPreferences sharedPreferences;
   private Runnable pictureRunnable;
   private Runnable dataRunnable;
   private ImageButton butPatientData;
+  private FloatingActionButton fabTrigger;
   private File destination;
   private String[] patientDataHeaders;
 
@@ -95,16 +97,17 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       super.onCreate(savedInstance);
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-      //Erzeuge einzigartige Installations-ID, falls nicht vorhanden
-      if(sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)").equals("(NULL)")){
-          sharedPreferences.edit().putString("UNIQUE_INSTALL", UUID.randomUUID().toString()).apply();
-      }
-
       butPatientData = findViewById(R.id.butPatientData);
-      butPatientData.setOnClickListener(v -> {
-          Intent i = new Intent(this, PatientDataInputActivity.class);
-          i.putExtra(PatientDataInputActivity.JSONFILENAME, classifier.getDataDetailPath());
-          startActivityForResult(i, PATIENT_DATA_REQUEST);
+      // Patienten Daten neu angeben verhält sich wie die Aktivität neu zu starten.
+      butPatientData.setOnClickListener(v -> finish());
+
+      fabTrigger = findViewById(R.id.fabTrigger);
+      fabTrigger.setOnClickListener(v -> {
+          processImage();
+          if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)){
+
+              runInBackground(getImageSaverRunnable());
+          }
       });
 
       // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
@@ -117,26 +120,23 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
               LOGGER.e("Error creating .nomedia File: "+e.getMessage());
           }
       }
+
+      // Lege CSV Header nur an wenn Präferenz dafür aktiviert
+      if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)) {
+          setUpCsvFile();
+      }
+
+      //Zeichne Zielrechteck
+      if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()) );
   }
 
   @Override
-  public void onPause(){
-      super.onPause();
-      // Stoppe und verwerfe alle Hintergrundtasks wenn App/diese Aktivität nicht im Vordergrund
-      poolScheduler.shutdownNow();
+  public synchronized void onDestroy() {
+      runOnUiThread(getSendDataRunnable());
+      super.onDestroy();
   }
 
   @Override
-  public void onResume(){
-      super.onResume();
-      // Neue Hintergrundtasks erstellen
-      poolScheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
-      poolScheduler.setRemoveOnCancelPolicy(true);
-      setUpPictureSaveInterval();
-      setUpSendDataInterval();
-  }
-
-    @Override
   protected int getLayoutId() {
     return R.layout.camera_connection_fragment;
   }
@@ -190,7 +190,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
-    if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()) );
 
     runInBackground(
         new Runnable() {
@@ -277,7 +276,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     targetLayout.bringToFront();
   }
 
-  private Runnable createImageSaverRunnable(){
+  private Runnable getImageSaverRunnable(){
       if(pictureRunnable == null) {
           pictureRunnable = new Runnable() {
 
@@ -303,7 +302,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       return pictureRunnable;
   }
 
-  private Runnable createSendDataRunnable(){
+  private Runnable getSendDataRunnable(){
       if(dataRunnable == null) {
           dataRunnable = new Runnable() {
               @Override
@@ -321,9 +320,9 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                       fileOut = new FileOutputStream(archiveFile);
                       zipOut = new ZipOutputStream(new BufferedOutputStream(fileOut));
                       for(File f : toBeArchived){
-                          LOGGER.d("Archiving File "+f.getName());
                           // Überspringe Unterordner (wie etwa "out" Ordner) und .nomedia-Datei
                           if(f.isDirectory() || f.getName().equals(".nomedia")) continue;
+                          LOGGER.d("Archiving File "+f.getName());
                           in = new BufferedInputStream(new FileInputStream(f), rawData.length);
                           ZipEntry entry = new ZipEntry(f.getName());
                           zipOut.putNextEntry(entry);
@@ -346,53 +345,27 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       return dataRunnable;
   }
 
-  private void setUpPictureSaveInterval(){
-      poolScheduler.remove(pictureRunnable);
-      int imageSaveInterval = Integer.parseInt(
-              sharedPreferences.getString(getString(R.string.interval_collect_picture_preference_key), "0"));
-      if(imageSaveInterval != 0) {
-          poolScheduler.scheduleWithFixedDelay(createImageSaverRunnable(),
-                  5, imageSaveInterval, TimeUnit.SECONDS);
+
+  private void setUpCsvFile(){
+      ArrayList<SimpleDetail> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
+
+      // Built Header and Patient Data text arrays from ArrayList
+      ArrayList<String> patientDataList = new ArrayList<>();
+      ArrayList<String> patientDataHeaderList = new ArrayList<>();
+      for(SimpleDetail s : patientData){
+          patientDataList.add(s.getValue());
+          patientDataHeaderList.add(s.getKey());
+
       }
+      currentPatientData = patientDataList.toArray(new String[0]);
+      patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
+
+      // Set new CSV File
+      File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+      currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
+      // Write Header to new CSV
+      writeCsvLine(patientDataHeaders);
   }
-
-  private void setUpSendDataInterval(){
-      poolScheduler.remove(dataRunnable);
-      int sendDataInterval = Integer.parseInt(
-              sharedPreferences.getString(getString(R.string.interval_send_data_preference_key), "0"));
-      if(sendDataInterval != 0
-              & sharedPreferences.getBoolean(getString(R.string.switch_auto_send_preference_key), false)) {
-          poolScheduler.scheduleWithFixedDelay(createSendDataRunnable(),
-                  0, sendDataInterval, TimeUnit.SECONDS);
-      }
-  }
-
-  @Override
-  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-      if(requestCode == PATIENT_DATA_REQUEST){
-          if(resultCode == RESULT_OK){
-              ArrayList<SimpleDetail> patientData = data.getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
-
-              // Built Header and Patient Data text arrays from ArrayList
-              ArrayList<String> patientDataList = new ArrayList<>();
-              ArrayList<String> patientDataHeaderList = new ArrayList<>();
-              for(SimpleDetail s : patientData){
-                  patientDataList.add(s.getValue());
-                  patientDataHeaderList.add(s.getKey());
-
-              }
-              currentPatientData = patientDataList.toArray(new String[0]);
-              patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
-
-              // Set new CSV File
-              File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
-              currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
-              // Write Header to new CSV
-              writeCsvLine(patientDataHeaders);
-          }
-        }
-      super.onActivityResult(requestCode, resultCode, data);
-    }
 
     protected void writeCsvLine(String[] data){
         if(currentCsvFile != null){

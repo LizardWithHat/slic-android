@@ -20,36 +20,46 @@
     android:layout_height="match_parent"
     android:background="#00000000">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/relativeLayout2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#00000000"
-        android:orientation="vertical">
+        android:background="#00000000">
 
 
         <org.tensorflow.lite.examples.classification.customview.TargetView
             android:id="@+id/targetLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
         </org.tensorflow.lite.examples.classification.customview.TargetView>
 
         <FrameLayout
             android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:background="@android:color/black"
-            tools:context="org.tensorflow.lite.examples.classification.CameraActivity" >
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:context="org.tensorflow.lite.examples.classification.CameraActivity">
 
         </FrameLayout>
 
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_alignParentTop="true"
-            android:background="@color/semi_transparent">
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/semi_transparent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/targetLayout">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -63,20 +73,20 @@
             android:id="@+id/butFlashToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/toolbar"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_toStartOf="@+id/butPreferences"
+            app:layout_constraintEnd_toStartOf="@+id/butPreferences"
+            app:layout_constraintTop_toTopOf="@+id/toolbar"
             app:srcCompat="@drawable/flash_on" />
 
         <ImageButton
             android:id="@+id/butPatientData"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/toolbar"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_toStartOf="@+id/butFlashToggle"
+            app:layout_constraintEnd_toStartOf="@+id/butFlashToggle"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/patientdata" />
 
 
@@ -84,14 +94,27 @@
             android:id="@+id/butPreferences"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/toolbar"
-            android:layout_alignEnd="@+id/toolbar"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/settings" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabTrigger"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar"
+            app:srcCompat="@drawable/camera_trigger" />
 
-    </RelativeLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <include
         android:id="@+id/bottom_sheet_layout"

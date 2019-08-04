@@ -277,7 +277,7 @@ public abstract class CameraActivity extends AppCompatActivity
             isProcessingFrame = false;
           }
         };
-    processImage();
+    // processImage();
   }
 
   /** Callback for Camera2 API */
@@ -335,7 +335,7 @@ public abstract class CameraActivity extends AppCompatActivity
             }
           };
 
-      processImage();
+      // processImage();
     } catch (final Exception e) {
       LOGGER.e(e, "Exception!");
       Trace.endSection();
@@ -409,25 +409,19 @@ public abstract class CameraActivity extends AppCompatActivity
   }
 
   private boolean hasPermission() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
-              checkSelfPermission(PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
-    } else {
-      return true;
-    }
+    return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
+            checkSelfPermission(PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
   }
 
   private void requestPermission() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)) {
-        Toast.makeText(
-                CameraActivity.this,
-                "Camera permission is required for this demo",
-                Toast.LENGTH_LONG)
-            .show();
-      }
-      requestPermissions(new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
+    if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)) {
+      Toast.makeText(
+              CameraActivity.this,
+              "Camera permission is required for this demo",
+              Toast.LENGTH_LONG)
+          .show();
     }
+    requestPermissions(new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
   }
 
   // Returns true if the device supports the required hardware level, or better.

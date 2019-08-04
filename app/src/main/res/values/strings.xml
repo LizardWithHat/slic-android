@@ -20,21 +20,15 @@
     <string name="target_square_preference_text">Zielrechteck zeichnen</string>
     <string name="send_and_collect_data_preference_summary">Einstellungen zum Sammeln und Senden von Daten</string>
     <string name="send_and_collect_data_preference_title">Daten sammeln und senden</string>
-    <string name="checkbox_auto_send_preference_text">Daten automatisch senden</string>
-    <string name="interval_send_data_preference_text">Interval zum Senden</string>
-    <string name="interval_collect_picture_preference_text">Interval zum Bilder Sammeln</string>
+    <string name="send_data_preference_text">Daten beim beenden der App senden</string>
+    <string name="collect_data_preference_text">Bilder und Daten sammeln</string>
     <string-array name="devices">
         <item>CPU</item>
         <item>GPU</item>
         <item>NNAPI</item>
     </string-array>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="target_square_preference_key">target_square_preference_key</string>
-    <string name="switch_auto_send_preference_key">switch_auto_send_preference_key</string>
-    <string name="interval_send_data_preference_key">interval_send_data_preference_key</string>
-    <string name="interval_collect_picture_preference_key">interval_collect_picture_preference_key</string>
     <string name="common_settings_title">Allgemeine Einstellungen</string>
     <string name="save">Speichern</string>
     <string name="cancel">Abbrechen</string>
@@ -43,4 +37,7 @@
 
     <string name="choose_number">Bitte Nummer auswählen</string>
     <string name="choose_list">Bitte Eintrag auswählen</string>
+    <string name="collect_data_preference_key">collect_data_preference_key</string>
+    <string name="send_data_preference_key">send_data_preference_key</string>
+    <string name="exit">Beenden</string>
 </resources>

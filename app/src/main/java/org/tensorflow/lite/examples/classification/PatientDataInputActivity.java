@@ -1,8 +1,10 @@
 package org.tensorflow.lite.examples.classification;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -16,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,12 +36,21 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.UUID;
 
 public class PatientDataInputActivity extends AppCompatActivity {
 
-    public static final String JSONFILENAME = "jsonfilename";
+    public static final String JSONFILENAME = "skin-cancer-data-detail.json";
     public static final String RESULT_STRING = "patientdataresultstring";
     private static final Logger LOGGER = new Logger();
+    private SharedPreferences sharedPreferences;
+    private static final int PERMISSIONS_REQUEST = 1;
+
+    private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
+    // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
+    // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
+    private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
 
     private ArrayList<SimpleDetail> patientData;
     private ListView lwDataDetails;
@@ -48,34 +60,66 @@ public class PatientDataInputActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_data_input);
         patientData = new ArrayList<>();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        createHeaderFromJson(getIntent().getStringExtra(JSONFILENAME));
+        //Erzeuge einzigartige Installations-ID, falls nicht vorhanden
+        if(sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)").equals("(NULL)")){
+            sharedPreferences.edit().putString("UNIQUE_INSTALL", UUID.randomUUID().toString()).apply();
+        }
+
+        if (!hasPermission()) {
+            requestPermission();
+        }
+
+        createHeaderFromJson(JSONFILENAME);
 
         Button save = findViewById(R.id.butPatiendDataInputSave);
         save.setOnClickListener(v -> {
             // Eingaben versenden
-            Intent extraData = new Intent();
-            extraData.putParcelableArrayListExtra(RESULT_STRING, patientData);
-            setResult(RESULT_OK, extraData);
-            finish();
+            Intent classifierIntent = new Intent(this, ClassifierActivity.class);
+            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, patientData);
+            startActivity(classifierIntent);
         });
 
-        Button cancel = findViewById(R.id.butPatiendDataInputCancel);
-        cancel.setOnClickListener(v -> {
-            Intent extraData = new Intent();
-            setResult(RESULT_CANCELED, extraData);
-            finish();
-        });
+        Button cancel = findViewById(R.id.butPatiendDataInputExit);
+        cancel.setOnClickListener(v -> finish());
 
         PatientDataAdapter dataAdapter = new PatientDataAdapter(patientData, getBaseContext());
         lwDataDetails = findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
     }
 
+    @Override
+    public void onRequestPermissionsResult(
+            final int requestCode, final String[] permissions, final int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST) {
+            if (grantResults.length <= 0
+                    && grantResults[0] == PackageManager.PERMISSION_DENIED
+                    && grantResults[1] == PackageManager.PERMISSION_DENIED) {
+                requestPermission();
+            }
+        }
+    }
+
+    private boolean hasPermission() {
+        return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
+                checkSelfPermission(PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)) {
+            Toast.makeText(
+                    this,
+                    "Camera permission is required for this App",
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
+        requestPermissions(new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
+    }
+
     private void createHeaderFromJson(String filename) {
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         patientData.add(new SimpleDetail("patient_id", "Patienten ID", sharedPreferences.
                 getString("UNIQUE_INSTALL", "(NULL)") +"_"+ System.currentTimeMillis()));
         patientData.add(new SimpleDetail("image_id", "Image ID", ""));
