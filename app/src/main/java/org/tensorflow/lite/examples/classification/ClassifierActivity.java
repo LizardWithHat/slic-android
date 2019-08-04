@@ -87,6 +87,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private FloatingActionButton fabTrigger;
   private File destination;
   private String[] patientDataHeaders;
+  private Boolean boolTriggerActivated = false;
 
   @Override
   public void onCreate(Bundle savedInstance){
@@ -99,9 +100,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
       fabTrigger = findViewById(R.id.fabTrigger);
       fabTrigger.setOnClickListener(v -> {
-          processImage();
+          boolTriggerActivated = true;
           if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)){
-
               runInBackground(getImageSaverRunnable());
           }
       });
@@ -183,7 +183,10 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
-
+    if(!boolTriggerActivated){
+        readyForNextImage();
+        return;
+    }
     runInBackground(
         new Runnable() {
           @Override
@@ -208,6 +211,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                     }
                   });
             }
+            boolTriggerActivated = false;
             readyForNextImage();
           }
         });

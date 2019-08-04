@@ -277,7 +277,7 @@ public abstract class CameraActivity extends AppCompatActivity
             isProcessingFrame = false;
           }
         };
-    // processImage();
+    processImage();
   }
 
   /** Callback for Camera2 API */
@@ -335,7 +335,7 @@ public abstract class CameraActivity extends AppCompatActivity
             }
           };
 
-      // processImage();
+      processImage();
     } catch (final Exception e) {
       LOGGER.e(e, "Exception!");
       Trace.endSection();
