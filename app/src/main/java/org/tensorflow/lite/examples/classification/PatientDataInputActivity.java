@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +32,7 @@ import org.tensorflow.lite.examples.classification.env.Logger;
 import org.tensorflow.lite.examples.classification.misc.ChoiceDetail;
 import org.tensorflow.lite.examples.classification.misc.IntervalDetail;
 import org.tensorflow.lite.examples.classification.misc.SimpleDetail;
+import org.tensorflow.lite.examples.classification.preferences.PreferenceActivity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +90,9 @@ public class PatientDataInputActivity extends AppCompatActivity {
         PatientDataAdapter dataAdapter = new PatientDataAdapter(patientData, getBaseContext());
         lwDataDetails = findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
 
     @Override
@@ -264,4 +270,15 @@ public class PatientDataInputActivity extends AppCompatActivity {
             return convertView;
         }
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.dataInput_toolbar_item) {
+            startActivity(new Intent(this, PreferenceActivity.class));
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
 }
