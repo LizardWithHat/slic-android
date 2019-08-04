@@ -16,7 +16,6 @@
 
 package org.tensorflow.lite.examples.classification;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -24,6 +23,8 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
+import android.hardware.Camera;
+import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Bundle;
 import android.os.Environment;
@@ -34,10 +35,9 @@ import android.util.TypedValue;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -60,10 +60,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -125,9 +121,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)) {
           setUpCsvFile();
       }
-
-      //Zeichne Zielrechteck
-      if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()) );
   }
 
   @Override
@@ -266,7 +259,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     }
     // Draw targeting Rectangle
     // Input wird noch gedreht
-    targetLayout.setLayoutParams(new RelativeLayout.LayoutParams(
+    targetLayout.setLayoutParams(new ConstraintLayout.LayoutParams(
             textureView.getMeasuredWidth(),
             textureView.getMeasuredHeight()
     ));
@@ -388,4 +381,11 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             }
         }
     }
+
+  @Override
+  public void onImageAvailable(final ImageReader reader) {
+      super.onImageAvailable(reader);
+      //Zeichne Zielrechteck
+      if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()));
+  }
 }
