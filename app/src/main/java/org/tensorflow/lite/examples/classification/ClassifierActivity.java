@@ -88,6 +88,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private File destination;
   private String[] patientDataHeaders;
   private Boolean boolTriggerActivated = false;
+  protected File currentCsvFile = null;
 
   @Override
   public void onCreate(Bundle savedInstance){
@@ -113,16 +114,20 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
               LOGGER.e("Error creating .nomedia File: "+e.getMessage());
           }
       }
+  }
 
+  @Override
+  public synchronized  void onResume() {
       // Lege CSV Header nur an wenn Präferenz dafür aktiviert
       if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), true)) {
           setUpCsvFile();
       }
+      super.onResume();
   }
 
   @Override
   public synchronized void onDestroy() {
-      runOnUiThread(getSendDataRunnable());
+      if(sharedPreferences.getBoolean(getString(R.string.send_data_preference_key), true)) runOnUiThread(getSendDataRunnable());
       super.onDestroy();
   }
 
@@ -340,8 +345,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                   } catch (Exception e){
                       LOGGER.e(e.getMessage());
                   }
-                  // CSV name bleibt gleich, Header müssen neu geschrieben werden
-                  writeCsvLine(patientDataHeaders);
                   LOGGER.d("Ich zippe/sende Daten!");
               }
           };
@@ -363,10 +366,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       }
       currentPatientData = patientDataList.toArray(new String[0]);
       patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
-
       // Set new CSV File
       File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
       currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
+
+      if(currentCsvFile.exists()) return;
+
       // Write Header to new CSV
       writeCsvLine(patientDataHeaders);
   }

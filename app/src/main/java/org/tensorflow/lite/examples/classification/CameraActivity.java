@@ -112,7 +112,6 @@ public abstract class CameraActivity extends AppCompatActivity
   private Spinner deviceSpinner;
   private TextView threadsTextView;
   private ImageButton butSettings;
-  protected File currentCsvFile;
   protected String[] currentPatientData;
 
   private Model model = Model.DOMINIK;
