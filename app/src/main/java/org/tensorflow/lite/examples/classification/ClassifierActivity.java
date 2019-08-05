@@ -192,8 +192,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     final Canvas canvas = new Canvas(rotatedFrameBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToRotatedTransform, null);
     croppedBitmap = Bitmap.createBitmap(rotatedFrameBitmap,
-            rotatedFrameBitmap.getHeight() / 2 - croppedBitmap.getHeight(),
-            rotatedFrameBitmap.getWidth() / 2 - croppedBitmap.getWidth(),
+            rotatedFrameBitmap.getWidth() / 2 - croppedBitmap.getWidth() / 2,
+            rotatedFrameBitmap.getHeight() / 2 - croppedBitmap.getHeight() / 2,
             croppedBitmap.getWidth(), croppedBitmap.getHeight());
 
     runInBackground(
