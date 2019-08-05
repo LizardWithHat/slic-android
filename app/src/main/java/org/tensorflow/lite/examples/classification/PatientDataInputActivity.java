@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,7 +92,7 @@ public class PatientDataInputActivity extends AppCompatActivity {
         lwDataDetails = findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.patientDataToolbar);
         setSupportActionBar(toolbar);
     }
 
@@ -280,5 +281,12 @@ public class PatientDataInputActivity extends AppCompatActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.data_input_toolbar_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
 
 }

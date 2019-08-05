@@ -23,7 +23,6 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
-import android.hardware.Camera;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Bundle;
@@ -74,11 +73,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
+  private Bitmap rotatedFrameBitmap = null;
   private long lastProcessingTimeMs;
   private Integer sensorOrientation;
   private Classifier classifier;
-  private Matrix frameToCropTransform;
-  private Matrix cropToFrameTransform;
+  private Matrix frameToRotatedTransform;
+  private Matrix rotatedToFrameTransform;
   private BorderedText borderedText;
   private SharedPreferences sharedPreferences;
   private Runnable pictureRunnable;
@@ -101,9 +101,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       fabTrigger = findViewById(R.id.fabTrigger);
       fabTrigger.setOnClickListener(v -> {
           boolTriggerActivated = true;
-          if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)){
-              runInBackground(getImageSaverRunnable());
-          }
       });
 
       // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
@@ -118,7 +115,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       }
 
       // Lege CSV Header nur an wenn Präferenz dafür aktiviert
-      if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), false)) {
+      if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), true)) {
           setUpCsvFile();
       }
   }
@@ -161,32 +158,39 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
     LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
     rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
+    int maximumDimension = previewWidth >= previewHeight ? previewWidth : previewHeight;
+    rotatedFrameBitmap = Bitmap.createBitmap(maximumDimension, maximumDimension, Config.ARGB_8888);
     croppedBitmap =
         Bitmap.createBitmap(
             classifier.getImageSizeX(), classifier.getImageSizeY(), Config.ARGB_8888);
 
-    frameToCropTransform =
+    frameToRotatedTransform =
         ImageUtils.getTransformationMatrix(
             previewWidth,
             previewHeight,
-            classifier.getImageSizeX(),
-            classifier.getImageSizeY(),
+            maximumDimension,
+            maximumDimension,
             sensorOrientation,
             MAINTAIN_ASPECT);
 
-    cropToFrameTransform = new Matrix();
-    frameToCropTransform.invert(cropToFrameTransform);
+    rotatedToFrameTransform = new Matrix();
+    frameToRotatedTransform.invert(rotatedToFrameTransform);
   }
 
   @Override
   protected void processImage() {
-    rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
-    final Canvas canvas = new Canvas(croppedBitmap);
-    canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
     if(!boolTriggerActivated){
         readyForNextImage();
         return;
     }
+    rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
+    final Canvas canvas = new Canvas(rotatedFrameBitmap);
+    canvas.drawBitmap(rgbFrameBitmap, frameToRotatedTransform, null);
+    croppedBitmap = Bitmap.createBitmap(rotatedFrameBitmap,
+            rotatedFrameBitmap.getHeight() / 2 - croppedBitmap.getHeight(),
+            rotatedFrameBitmap.getWidth() / 2 - croppedBitmap.getWidth(),
+            croppedBitmap.getWidth(), croppedBitmap.getHeight());
+
     runInBackground(
         new Runnable() {
           @Override
@@ -197,6 +201,9 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
               lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
               LOGGER.v("Detect: %s", results);
               cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+                if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), true)){
+                    runInBackground(getImageSaverRunnable());
+                }
 
               runOnUiThread(
                   new Runnable() {
