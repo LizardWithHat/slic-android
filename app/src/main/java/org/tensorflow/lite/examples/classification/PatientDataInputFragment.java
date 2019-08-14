@@ -113,8 +113,8 @@ public class PatientDataInputFragment extends Fragment {
     private void createHeaderFromJson(String filename) {
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
-        patientData.add(new SimpleDetail("patient_id", "Patienten ID", sharedPreferences.
-                getString("UNIQUE_INSTALL", "(NULL)") +"_"+ System.currentTimeMillis()));
+        patientData.add(new SimpleDetail("patient_id", "Patienten ID",  System.currentTimeMillis()+"_"+
+                sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)")));
         patientData.add(new SimpleDetail("image_id", "Image ID", ""));
 
         // lade JSON Datei aus Asset Ordner
