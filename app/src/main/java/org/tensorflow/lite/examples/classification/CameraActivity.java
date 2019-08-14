@@ -20,7 +20,6 @@ import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -63,10 +62,8 @@ import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Recognition;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class CameraActivity extends AppCompatActivity
     implements OnImageAvailableListener,
@@ -76,7 +73,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private static final Logger LOGGER = new Logger();
 
   private static final int PERMISSIONS_REQUEST = 1;
-
+  public static final String CHOSENMODEL = "CHOSENMODEL";
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
   // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
   // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
@@ -108,13 +105,12 @@ public abstract class CameraActivity extends AppCompatActivity
       inferenceTimeTextView;
   protected ImageView bottomSheetArrowImageView;
   private ImageView plusImageView, minusImageView;
-  private Spinner modelSpinner;
   private Spinner deviceSpinner;
   private TextView threadsTextView;
   private ImageButton butSettings;
   protected String[] currentPatientData;
 
-  private Model model = Model.DOMINIK;
+  private Model model;
   private Device device = Device.CPU;
   private int numThreads = -1;
 
@@ -138,7 +134,6 @@ public abstract class CameraActivity extends AppCompatActivity
     threadsTextView = findViewById(R.id.threads);
     plusImageView = findViewById(R.id.plus);
     minusImageView = findViewById(R.id.minus);
-    modelSpinner = findViewById(R.id.model_spinner);
     deviceSpinner = findViewById(R.id.device_spinner);
     bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
     gestureLayout = findViewById(R.id.gesture_layout);
@@ -210,13 +205,12 @@ public abstract class CameraActivity extends AppCompatActivity
     rotationTextView = findViewById(R.id.rotation_info);
     inferenceTimeTextView = findViewById(R.id.inference_info);
 
-    modelSpinner.setOnItemSelectedListener(this);
     deviceSpinner.setOnItemSelectedListener(this);
 
     plusImageView.setOnClickListener(this);
     minusImageView.setOnClickListener(this);
 
-    model = Model.valueOf(modelSpinner.getSelectedItem().toString().toUpperCase());
+    model = Model.valueOf(getIntent().getStringExtra(CHOSENMODEL).toUpperCase());
     device = Device.valueOf(deviceSpinner.getSelectedItem().toString());
     numThreads = Integer.parseInt(threadsTextView.getText().toString().trim());
   }
@@ -651,9 +645,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
   @Override
   public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-    if (parent == modelSpinner) {
-      setModel(Model.valueOf(parent.getItemAtPosition(pos).toString().toUpperCase()));
-    } else if (parent == deviceSpinner) {
+   if (parent == deviceSpinner) {
       setDevice(Device.valueOf(parent.getItemAtPosition(pos).toString()));
     }
   }

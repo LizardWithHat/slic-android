@@ -69,7 +69,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           Resources.getSystem().getDisplayMetrics().widthPixels,
           Resources.getSystem().getDisplayMetrics().heightPixels);
   private static final float TEXT_SIZE_DIP = 10;
-  private static final int PATIENT_DATA_REQUEST = 2;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
@@ -354,7 +353,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
 
   private void setUpCsvFile(){
-      ArrayList<SimpleDetail> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputActivity.RESULT_STRING);
+      ArrayList<SimpleDetail> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
 
       // Built Header and Patient Data text arrays from ArrayList
       ArrayList<String> patientDataList = new ArrayList<>();

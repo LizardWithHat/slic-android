@@ -40,7 +40,6 @@ public class SimpleDetail implements Parcelable {
 
     @Override
     public int describeContents() {
-        // TODO implementierung fehlt noch?
         return 0;
     }
 
@@ -66,5 +65,5 @@ public class SimpleDetail implements Parcelable {
         this.value = pc.readString();
     }
 
-    public SimpleDetail(){};
+    public SimpleDetail(){}
 }
