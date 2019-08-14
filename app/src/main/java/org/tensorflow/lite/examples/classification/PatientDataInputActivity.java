@@ -66,17 +66,11 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
     private void setUpFragment(Classifier.Model chosenModel) {
         Bundle extras = new Bundle();
         extras.putSerializable(PatientDataInputFragment.CHOSEN_MODEL_KEY, chosenModel);
-        boolean firstReplacement = false;
-        if(inputMask == null) firstReplacement = true;
+        if(inputMask != null) getSupportFragmentManager().beginTransaction().remove(inputMask).commit();
         inputMask = new PatientDataInputFragment();
         inputMask.setArguments(extras);
-        if(firstReplacement) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.viewFragmentPlaceholder, inputMask).commit();
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentDataInput, inputMask).commit();
-        }
     }
 
 

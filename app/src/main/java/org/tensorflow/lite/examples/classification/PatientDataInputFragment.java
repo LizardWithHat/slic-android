@@ -95,7 +95,7 @@ public class PatientDataInputFragment extends Fragment {
         Button cancel = parentActivity.findViewById(R.id.butPatiendDataInputExit);
         cancel.setOnClickListener(s -> getActivity().finish());
 
-        PatientDataAdapter dataAdapter = new PatientDataAdapter(patientData, parent);
+        PatientDataAdapter dataAdapter = new PatientDataAdapter(patientData, getContext());
         lwDataDetails = parentActivity.findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
 
