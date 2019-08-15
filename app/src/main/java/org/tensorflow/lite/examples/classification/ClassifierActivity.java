@@ -421,15 +421,16 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             FileWriter csvWriter;
             try {
                 csvWriter = new FileWriter(currentCsvFile, true);
-                String line = "";
+                StringBuilder sb = new StringBuilder();
                 for(String s : data){
-                    if(line.isEmpty()){
-                        line = s;
+                    if(sb.length() == 0){
+                        sb.append(s);
                     }else {
-                        line = String.join(",", line, s);
+                        sb.append(",");
+                        sb.append(s);
                     }
                 }
-                csvWriter.append(line).append("\n");
+                csvWriter.append(sb).append("\n");
                 csvWriter.flush();
                 csvWriter.close();
             } catch (IOException e) {

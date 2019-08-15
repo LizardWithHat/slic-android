@@ -14,6 +14,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import org.tensorflow.lite.examples.classification.preferences.PreferenceActivity;
@@ -87,19 +89,19 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
     }
 
     private boolean hasPermission() {
-        return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
-                checkSelfPermission(PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(this, PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
+                ContextCompat.checkSelfPermission(this, PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
-        if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, PERMISSION_CAMERA)) {
             Toast.makeText(
                     this,
                     "Camera permission is required for this App",
                     Toast.LENGTH_LONG)
                     .show();
         }
-        requestPermissions(new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
+        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
     }
 
     @Override
