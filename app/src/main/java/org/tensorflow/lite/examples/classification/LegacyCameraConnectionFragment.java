@@ -17,10 +17,13 @@ package org.tensorflow.lite.examples.classification;
  */
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Parameters;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -31,6 +34,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import java.io.IOException;
 import java.util.List;
 import org.tensorflow.lite.examples.classification.customview.AutoFitTextureView;
@@ -86,6 +90,7 @@ public class LegacyCameraConnectionFragment extends Fragment {
                 CameraConnectionFragment.chooseOptimalSize(
                     sizes, desiredSize.getWidth(), desiredSize.getHeight());
             parameters.setPreviewSize(previewSize.getWidth(), previewSize.getHeight());
+            parameters.setFlashMode(Parameters.FLASH_MODE_OFF);
             camera.setDisplayOrientation(90);
             camera.setParameters(parameters);
             camera.setPreviewTexture(texture);
@@ -100,6 +105,29 @@ public class LegacyCameraConnectionFragment extends Fragment {
           textureView.setAspectRatio(s.height, s.width);
 
           camera.startPreview();
+
+
+          // If flash available, show button
+          if(getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+            getActivity().findViewById(R.id.butFlashToggle).setVisibility(View.VISIBLE);
+          }
+
+          // Registriere onClickListener für Blitz-Toggle Button
+          Activity activity = getActivity();
+          ImageButton flashToggleButton = activity.findViewById(R.id.butFlashToggle);
+          flashToggleButton.setOnClickListener(v -> {
+            camera.stopPreview();
+            Parameters p = camera.getParameters();
+            if(p.getFlashMode().equals(Parameters.FLASH_MODE_OFF)) {
+              flashToggleButton.setImageDrawable(activity.getDrawable(R.drawable.flash_off));
+              p.setFlashMode(Parameters.FLASH_MODE_TORCH);
+            } else {
+              flashToggleButton.setImageDrawable(activity.getDrawable(R.drawable.flash_on));
+              p.setFlashMode(Parameters.FLASH_MODE_OFF);
+            }
+            camera.setParameters(p);
+            camera.startPreview();
+          });
         }
 
         @Override
@@ -150,7 +178,7 @@ public class LegacyCameraConnectionFragment extends Fragment {
     // a camera and start preview from here (otherwise, we wait until the surface is ready in
     // the SurfaceTextureListener).
 
-    if (textureView.isAvailable()) {
+    if (textureView.isAvailable() && camera != null) {
       camera.startPreview();
     } else {
       textureView.setSurfaceTextureListener(surfaceTextureListener);
