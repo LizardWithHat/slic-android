@@ -34,8 +34,10 @@ import android.util.TypedValue;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.NumberPicker;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -65,7 +67,8 @@ import java.util.zip.ZipOutputStream;
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
   private static final boolean MAINTAIN_ASPECT = true;
-  private static final Size DESIRED_PREVIEW_SIZE = new Size(
+  // Initial size is Smartphones native resolution
+  private static Size desiredPreviewSize = new Size(
           Resources.getSystem().getDisplayMetrics().widthPixels,
           Resources.getSystem().getDisplayMetrics().heightPixels);
   private static final float TEXT_SIZE_DIP = 10;
@@ -78,6 +81,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Classifier classifier;
   private Matrix frameToRotatedTransform;
   private Matrix rotatedToFrameTransform;
+  private Matrix rotatedToCropTransform;
   private BorderedText borderedText;
   private SharedPreferences sharedPreferences;
   private Runnable pictureRunnable;
@@ -113,6 +117,33 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
               LOGGER.e("Error creating .nomedia File: "+e.getMessage());
           }
       }
+
+      frameValueTextView.setOnClickListener((v -> {
+          View dialogView = getLayoutInflater().inflate(R.layout.number_picker_dialog_layout, null);
+          NumberPicker numberPicker = dialogView.findViewById(R.id.numberPicker);
+          numberPicker.setMinValue(0);
+          numberPicker.setMaxValue(supportedSizes.length-1);
+          numberPicker.setWrapSelectorWheel(true);
+
+          String[] labels = new String[supportedSizes.length];
+          for(int i = 0; i < supportedSizes.length; i++){
+              labels[i] = supportedSizes[i].getWidth()+"x"+supportedSizes[i].getHeight();
+          }
+          numberPicker.setDisplayedValues(labels);
+
+          AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+          AlertDialog dialog;
+          dialogBuilder.setView(dialogView);
+          dialogBuilder.setTitle(getString(R.string.choose_resolution));
+          dialogBuilder.setPositiveButton(getString(R.string.set), (dialog1, which) -> {
+              desiredPreviewSize = supportedSizes[numberPicker.getValue()];
+              finish();
+              startActivity(getIntent());
+          });
+          dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog12, which) -> dialog12.dismiss());
+          dialog = dialogBuilder.create();
+          dialog.show();
+      }));
   }
 
   @Override
@@ -137,7 +168,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
   @Override
   protected Size getDesiredPreviewFrameSize() {
-    return DESIRED_PREVIEW_SIZE;
+    return desiredPreviewSize;
   }
 
   @Override
@@ -162,23 +193,34 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
     LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
     rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
-    int maximumDimension = previewWidth >= previewHeight ? previewWidth : previewHeight;
-    rotatedFrameBitmap = Bitmap.createBitmap(maximumDimension, maximumDimension, Config.ARGB_8888);
+    rotatedFrameBitmap = Bitmap.createBitmap(findViewById(R.id.targetLayout).getWidth(),
+            findViewById(R.id.targetLayout).getHeight(), Config.ARGB_8888);
     croppedBitmap =
         Bitmap.createBitmap(
             classifier.getImageSizeX(), classifier.getImageSizeY(), Config.ARGB_8888);
 
-    frameToRotatedTransform =
-        ImageUtils.getTransformationMatrix(
-            previewWidth,
-            previewHeight,
-            maximumDimension,
-            maximumDimension,
-            sensorOrientation,
-            MAINTAIN_ASPECT);
+      frameToRotatedTransform =
+              ImageUtils.getTransformationMatrix(
+                      previewWidth,
+                      previewHeight,
+                      rotatedFrameBitmap.getWidth(),
+                      rotatedFrameBitmap.getHeight(),
+                      sensorOrientation,
+                      MAINTAIN_ASPECT);
 
     rotatedToFrameTransform = new Matrix();
     frameToRotatedTransform.invert(rotatedToFrameTransform);
+
+    runOnUiThread(
+            new Runnable() {
+                @Override
+                public void run() {
+                    showFrameInfo(previewWidth + "x" + previewHeight);
+                    showCropInfo(croppedBitmap.getWidth() + "x" + croppedBitmap.getHeight());
+                    showRotationInfo(String.valueOf(sensorOrientation));
+                    showInference(0 + "ms");
+                }
+            });
   }
 
   @Override
@@ -216,7 +258,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                       showResultsInBottomSheet(results);
                       showFrameInfo(previewWidth + "x" + previewHeight);
                       showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
-                      showCameraResolution(canvas.getWidth() + "x" + canvas.getHeight());
                       showRotationInfo(String.valueOf(sensorOrientation));
                       showInference(lastProcessingTimeMs + "ms");
                     }

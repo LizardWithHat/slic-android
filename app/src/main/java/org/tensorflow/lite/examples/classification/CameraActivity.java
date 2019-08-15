@@ -21,6 +21,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -41,15 +42,18 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -57,6 +61,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
+import org.tensorflow.lite.examples.classification.misc.IntervalDetail;
 import org.tensorflow.lite.examples.classification.preferences.PreferenceActivity;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Device;
 import org.tensorflow.lite.examples.classification.tflite.Classifier.Model;
@@ -100,7 +105,6 @@ public abstract class CameraActivity extends AppCompatActivity
       recognition2ValueTextView;
   protected TextView frameValueTextView,
       cropValueTextView,
-      cameraResolutionTextView,
       rotationTextView,
       inferenceTimeTextView;
   protected ImageView bottomSheetArrowImageView;
@@ -109,6 +113,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private TextView threadsTextView;
   private ImageButton butSettings;
   protected String[] currentPatientData;
+  protected Size[] supportedSizes;
 
   private Model model;
   private Device device = Device.CPU;
@@ -201,7 +206,6 @@ public abstract class CameraActivity extends AppCompatActivity
 
     frameValueTextView = findViewById(R.id.frame_info);
     cropValueTextView = findViewById(R.id.crop_info);
-    cameraResolutionTextView = findViewById(R.id.view_info);
     rotationTextView = findViewById(R.id.rotation_info);
     inferenceTimeTextView = findViewById(R.id.inference_info);
 
@@ -455,6 +459,7 @@ public abstract class CameraActivity extends AppCompatActivity
                 || isHardwareLevelSupported(
                     characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL);
         LOGGER.i("Camera API lv2?: %s", useCamera2API);
+        supportedSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(SurfaceTexture.class);
         return cameraId;
       }
     } catch (CameraAccessException e) {
@@ -560,10 +565,6 @@ public abstract class CameraActivity extends AppCompatActivity
 
   protected void showCropInfo(String cropInfo) {
     cropValueTextView.setText(cropInfo);
-  }
-
-  protected void showCameraResolution(String cameraInfo) {
-    cameraResolutionTextView.setText(previewWidth + "x" + previewHeight);
   }
 
   protected void showRotationInfo(String rotation) {
