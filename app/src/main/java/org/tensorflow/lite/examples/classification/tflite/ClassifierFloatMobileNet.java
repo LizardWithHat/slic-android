@@ -55,7 +55,7 @@ public class ClassifierFloatMobileNet extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return "skin-cancer-mnist-with-mobilenetv2.tflite";
+    return "mobilenetV2 - stanford - full retrain.tflite";
   }
 
   @Override
@@ -70,9 +70,9 @@ public class ClassifierFloatMobileNet extends Classifier {
 
   @Override
   protected void addPixelValue(int pixelValue, float extremeValues[]) {
-    imgData.putFloat(((pixelValue >> 16) & 0xFF) - extremeValues[0] / (extremeValues[1] - extremeValues[0]));
-    imgData.putFloat(((pixelValue >> 8) & 0xFF) - extremeValues[2] / (extremeValues[3] - extremeValues[2]));
-    imgData.putFloat(((pixelValue) & 0xFF) - extremeValues[4] / (extremeValues[5] - extremeValues[4]));
+    imgData.putFloat((((pixelValue >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+    imgData.putFloat((((pixelValue >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+    imgData.putFloat(((pixelValue & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
   }
 
   @Override
@@ -92,7 +92,10 @@ public class ClassifierFloatMobileNet extends Classifier {
 
   @Override
   protected void runInference() {
-    tflite.run(imgData, labelProbArray);
+    float[][] result = new float[1][1];
+    tflite.run(imgData, result);
+    setProbability(0, result[0][0]);
+    setProbability(1, 1 - result[0][0]);
   }
 
   @Override
