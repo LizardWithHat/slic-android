@@ -53,6 +53,7 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
     private ImageView curPic;
     private TextView resultsTextView;
     private TextView resultsTextViewTitle;
+    private TextView ipAdressTextView;
     private int defaultPort = 8080;
     private String ipAdress;
 
@@ -63,8 +64,10 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         curPic = findViewById(R.id.iwWebServerCurrentPicture);
         resultsTextView = findViewById(R.id.tvWebServerActivityResults);
         resultsTextViewTitle = findViewById(R.id.tfWebServerActivityResultTitle);
+        ipAdressTextView = findViewById(R.id.tvIpAddressTextView);
 
         ipAdress = getNetworkIpAdress();
+        ipAdressTextView.setText(ipAdress+":"+defaultPort);
         Bitmap qrCode = generateQrCode(ipAdress, defaultPort);
         if(qrCode != null) curPic.setImageBitmap(qrCode);
 
