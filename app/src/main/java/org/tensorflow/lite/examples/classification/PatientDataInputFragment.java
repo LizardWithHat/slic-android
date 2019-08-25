@@ -1,19 +1,20 @@
 package org.tensorflow.lite.examples.classification;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.wifi.SupplicantState;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,21 +23,18 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.lite.examples.classification.env.Logger;
+import org.tensorflow.lite.examples.classification.httpd.ClassifierWebServerActivity;
 import org.tensorflow.lite.examples.classification.misc.ChoiceDetail;
 import org.tensorflow.lite.examples.classification.misc.IntervalDetail;
 import org.tensorflow.lite.examples.classification.misc.SimpleDetail;
-import org.tensorflow.lite.examples.classification.preferences.PreferenceActivity;
 import org.tensorflow.lite.examples.classification.tflite.Classifier;
 
 import java.io.IOException;
@@ -108,6 +106,24 @@ public class PatientDataInputFragment extends Fragment {
             startActivity(classifierIntent);
         });
 
+        Button startWebServer = getActivity().findViewById(R.id.butStartWebServer);
+        startWebServer.setOnClickListener(s -> {
+            // Eingaben versenden
+            Intent classifierIntent = new Intent(parent, ClassifierWebServerActivity.class);
+            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, patientData);
+            classifierIntent.putExtra(ClassifierWebServerActivity.CHOSENMODEL, chosenModel.toString());
+            startActivity(classifierIntent);
+        });
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network[] networks = connectivityManager.getAllNetworks();
+        for(Network network : networks){
+            // Button nur aktivieren wenn aktive WIFI oder Ethernet verbindung
+            if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+            connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                startWebServer.setEnabled(true);
+            }
+        }
     }
 
     private void createHeaderFromJson(String filename) {

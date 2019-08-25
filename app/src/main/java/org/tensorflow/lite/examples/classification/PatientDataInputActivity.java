@@ -30,6 +30,10 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
     // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
     // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
     private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    // Um den Webserver zu benutzen muss die WiFi Nutzung genehmigt werden.
+    private static final String PERMISSION_WIFI = Manifest.permission.ACCESS_WIFI_STATE;
+    private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
+    private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
     private static final int PERMISSIONS_REQUEST = 1;
     private Fragment inputMask;
 
@@ -82,7 +86,10 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
         if (requestCode == PERMISSIONS_REQUEST) {
             if (grantResults.length <= 0
                     && grantResults[0] == PackageManager.PERMISSION_DENIED
-                    && grantResults[1] == PackageManager.PERMISSION_DENIED) {
+                    && grantResults[1] == PackageManager.PERMISSION_DENIED
+                    && grantResults[2] == PackageManager.PERMISSION_DENIED
+                    && grantResults[3] == PackageManager.PERMISSION_DENIED
+                    && grantResults[4] == PackageManager.PERMISSION_DENIED) {
                 requestPermission();
             }
         }
@@ -90,7 +97,10 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
 
     private boolean hasPermission() {
         return ContextCompat.checkSelfPermission(this, PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                ContextCompat.checkSelfPermission(this, PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED &
+                ContextCompat.checkSelfPermission(this, PERMISSION_WIFI) == PackageManager.PERMISSION_GRANTED &
+                ContextCompat.checkSelfPermission(this, PERMISSION_INTERNET) == PackageManager.PERMISSION_GRANTED &
+        ContextCompat.checkSelfPermission(this, PERMISSION_NETWORK) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermission() {
@@ -101,7 +111,7 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
                     Toast.LENGTH_LONG)
                     .show();
         }
-        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
+        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE, PERMISSION_WIFI}, PERMISSIONS_REQUEST);
     }
 
     @Override

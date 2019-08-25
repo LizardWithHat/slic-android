@@ -11,32 +11,23 @@
     <string name="threads">Threads:</string>
 
     <string name="model">Model:</string>
-    <string-array name="models">
-        <item>Kaggle</item>
-        <item>Dominik</item>
-    </string-array>
-
     <string name="device">Gerät:</string>
+
     <string name="target_square_preference_text">Zielrechteck zeichnen</string>
     <string name="send_and_collect_data_preference_summary">Einstellungen zum Sammeln und Senden von Daten</string>
     <string name="send_and_collect_data_preference_title">Daten sammeln und senden</string>
     <string name="send_data_preference_text">Daten beim beenden der App senden</string>
     <string name="collect_data_preference_text">Bilder und Daten sammeln</string>
-    <string-array name="devices">
-        <item>CPU</item>
-        <item>GPU</item>
-        <item>NNAPI</item>
-    </string-array>
-
     <string name="target_square_preference_key">target_square_preference_key</string>
     <string name="common_settings_title">Allgemeine Einstellungen</string>
+
     <string name="save">Speichern</string>
     <string name="cancel">Abbrechen</string>
     <string name="set">Setzen</string>
     <string name="patient_data_input_title">Eingabe der Patientendaten</string>
-
     <string name="choose_number">Bitte Nummer auswählen</string>
     <string name="choose_list">Bitte Eintrag auswählen</string>
+
     <string name="collect_data_preference_key">collect_data_preference_key</string>
     <string name="send_data_preference_key">send_data_preference_key</string>
     <string name="exit">Beenden</string>
@@ -45,4 +36,17 @@
     <string name="cropResolution">Ausschnitt-Auflösung</string>
     <string name="previewResolution">Vorschau-Auflösung</string>
     <string name="choose_resolution">Auflösung auswählen</string>
+    <string name="start_web_server">Webserver starten</string>
+    <string name="webserver_running">Webserver läuft</string>
+    <string name="results">Ergebnisse</string>
+    <string name="scan_qr_code_prompt">Scanne diesen QR Code mit dem zu koppelnden Gerät</string>
+    <string-array name="models">
+        <item>Kaggle</item>
+        <item>Dominik</item>
+    </string-array>
+    <string-array name="devices">
+        <item>CPU</item>
+        <item>GPU</item>
+        <item>NNAPI</item>
+    </string-array>
 </resources>
