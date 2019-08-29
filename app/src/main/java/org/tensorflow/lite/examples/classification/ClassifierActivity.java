@@ -42,6 +42,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.tensorflow.lite.examples.classification.customview.AutoFitTextureView;
 import org.tensorflow.lite.examples.classification.customview.TargetView;
 import org.tensorflow.lite.examples.classification.env.BorderedText;
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
@@ -86,7 +87,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private SharedPreferences sharedPreferences;
   private Runnable pictureRunnable;
   private Runnable dataRunnable;
-  private ImageButton butPatientData;
   private FloatingActionButton fabTrigger;
   private File destination;
   private String[] patientDataHeaders;
@@ -98,9 +98,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       super.onCreate(savedInstance);
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-      butPatientData = findViewById(R.id.butPatientData);
-      // Patienten Daten neu angeben verhält sich wie die Aktivität neu zu starten.
-      butPatientData.setOnClickListener(v -> finish());
 
       fabTrigger = findViewById(R.id.fabTrigger);
       fabTrigger.setOnClickListener(v -> {

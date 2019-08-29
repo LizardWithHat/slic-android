@@ -80,16 +80,6 @@
             app:layout_constraintTop_toTopOf="@+id/toolbar"
             app:srcCompat="@drawable/flash_on" />
 
-        <ImageButton
-            android:id="@+id/butPatientData"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/butFlashToggle"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/patientdata" />
-
 
         <ImageButton
             android:id="@+id/butPreferences"
@@ -112,7 +102,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
-            app:srcCompat="@drawable/camera_trigger" />
+            app:srcCompat="@drawable/camera_trigger"
+            android:focusable="true" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
