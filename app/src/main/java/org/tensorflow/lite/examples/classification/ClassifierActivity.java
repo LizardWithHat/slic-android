@@ -31,6 +31,8 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
@@ -60,6 +62,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -92,6 +95,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private String[] patientDataHeaders;
   private Boolean boolTriggerActivated = false;
   protected File currentCsvFile = null;
+  private float scaleFactor = 1.0f;
+  private ScaleGestureDetector scaleGestureDetector;
 
   @Override
   public void onCreate(Bundle savedInstance){
@@ -141,6 +146,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
           dialog = dialogBuilder.create();
           dialog.show();
       }));
+
+      scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
   }
 
   @Override
@@ -159,6 +166,13 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   }
 
   @Override
+  public boolean onTouchEvent(MotionEvent ev) {
+      scaleGestureDetector.onTouchEvent(ev);
+      return true;
+  }
+
+
+    @Override
   protected int getLayoutId() {
     return R.layout.camera_connection_fragment;
   }
@@ -442,4 +456,22 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       //Zeichne Zielrechteck
       if(classifier != null) runOnUiThread( () -> drawRectangle(classifier.getImageSizeX(), classifier.getImageSizeY()));
   }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
+            AutoFitTextureView viewPort = findViewById(R.id.texture);
+            TargetView targetRect = findViewById(R.id.targetLayout);
+
+            scaleFactor *= scaleGestureDetector.getScaleFactor();
+            scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 10.0f));
+
+            viewPort.setScaleX(scaleFactor);
+            viewPort.setScaleY(scaleFactor);
+            targetRect.setScaleX(scaleFactor);
+            targetRect.setScaleY(scaleFactor);
+
+            return true;
+        }
+    }
 }
