@@ -51,11 +51,14 @@ public class ClassifierWebServer extends NanoHTTPD {
                     resultsString.append("\n");
                 }
                 resultsString.trimToSize();
-                return newFixedLengthResponse(resultsString.toString());
+                return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, resultsString.toString());
             } catch (IOException | ResponseException e) {
                 LOGGER.e(e, "Error on POST Body Parse");
+                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "500 - Interal Server Error");
+            } catch (NullPointerException e){
+                LOGGER.e(e, "Error parsing Image");
+                return newFixedLengthResponse(Response.Status.UNSUPPORTED_MEDIA_TYPE, MIME_PLAINTEXT, "415 - Unsupported Media. Did you send a base64 Encoded Bitmap?");
             }
-            return newFixedLengthResponse("Request body = ");
         }
         return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT,
                 "The requested resource does not exist");

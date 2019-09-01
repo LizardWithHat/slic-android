@@ -275,7 +275,7 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
     }
 
     @Override
-    public List<Classifier.Recognition> onServeReceived(String base64String) {
+    public List<Classifier.Recognition> onServeReceived(String base64String) throws NullPointerException {
         Bitmap image = decodeBASE64Image(base64String);
         transformationMatrix = createTransormationMatrix(
                 new Size(image.getWidth(), image.getHeight()), 0);
