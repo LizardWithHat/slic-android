@@ -41,8 +41,8 @@ public class ClassifierWebServer extends NanoHTTPD {
             try {
                 Map<String, String> files = new HashMap<String, String>();
                 session.parseBody(files);
-                String requestBody = session.getQueryParameterString();
-                List<Classifier.Recognition> results = callback.onServeReceived(requestBody);
+                if(!files.containsKey("image")) return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "400 - Bad Request. Tag \"image\" not found");
+                List<Classifier.Recognition> results = callback.onServeReceived(files.get("image"));
                 StringBuilder resultsString = new StringBuilder();
                 for(Classifier.Recognition i : results){
                     resultsString.append(i.getTitle());

@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -275,8 +276,8 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
     }
 
     @Override
-    public List<Classifier.Recognition> onServeReceived(String base64String) throws NullPointerException {
-        Bitmap image = decodeBASE64Image(base64String);
+    public List<Classifier.Recognition> onServeReceived(String input) throws NullPointerException {
+        Bitmap image = BitmapFactory.decodeFile(input);
         transformationMatrix = createTransormationMatrix(
                 new Size(image.getWidth(), image.getHeight()), 0);
         return results = processImage(image);
