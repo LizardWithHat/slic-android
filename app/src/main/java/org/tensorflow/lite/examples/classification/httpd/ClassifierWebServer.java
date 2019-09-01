@@ -57,7 +57,7 @@ public class ClassifierWebServer extends NanoHTTPD {
                 return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "500 - Interal Server Error");
             } catch (NullPointerException e){
                 LOGGER.e(e, "Error parsing Image");
-                return newFixedLengthResponse(Response.Status.UNSUPPORTED_MEDIA_TYPE, MIME_PLAINTEXT, "415 - Unsupported Media. Did you send a base64 Encoded Bitmap?");
+                return newFixedLengthResponse(Response.Status.UNSUPPORTED_MEDIA_TYPE, MIME_PLAINTEXT, "415 - Unsupported Media. Try sending an image");
             }
         }
         return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT,
