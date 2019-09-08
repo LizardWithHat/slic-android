@@ -21,22 +21,30 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.media.MediaActionSound;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.SoundEffectConstants;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -107,6 +115,16 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       fabTrigger = findViewById(R.id.fabTrigger);
       fabTrigger.setOnClickListener(v -> {
           boolTriggerActivated = true;
+          MediaActionSound soundEffectPlayer = new MediaActionSound();
+          soundEffectPlayer.play(MediaActionSound.SHUTTER_CLICK);
+          int animationTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+          FrameLayout cameraFlashOverlay = findViewById(R.id.flashLayout);
+          cameraFlashOverlay.setAlpha(1f);
+          cameraFlashOverlay.setVisibility(View.VISIBLE);
+          cameraFlashOverlay.animate()
+                  .alpha(0f)
+                  .setDuration(animationTime)
+                  .setListener(null);
       });
 
       // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
