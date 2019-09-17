@@ -16,10 +16,15 @@ limitations under the License.
 package org.tensorflow.lite.examples.classification.tflite;
 
 import android.app.Activity;
+
+import org.tensorflow.lite.examples.classification.env.Logger;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
-public class ClassifierFloatMobileNet extends Classifier {
+public class ClassifierFloatResNet50Dominik extends Classifier {
 
   /** MobileNet requires additional normalization of the used input. */
   private static final float IMAGE_MEAN = 127.5f;
@@ -32,12 +37,12 @@ public class ClassifierFloatMobileNet extends Classifier {
   private float[][] labelProbArray = null;
 
   /**
-   * Initializes a {@code ClassifierFloatMobileNet}.
+   * Initializes a {@code ClassifierFloatMobileNetDominik}.
    *
    * @param activity
    */
-  public ClassifierFloatMobileNet(Activity activity, Device device, int numThreads)
-      throws IOException {
+  public ClassifierFloatResNet50Dominik(Activity activity, Device device, int numThreads)
+          throws IOException {
     super(activity, device, numThreads);
     labelProbArray = new float[1][getNumLabels()];
   }
@@ -55,7 +60,7 @@ public class ClassifierFloatMobileNet extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return "mobilenetV2 - stanford - full retrain.tflite";
+    return "skin-cancer-ResNet50.tflite";
   }
 
   @Override
@@ -93,7 +98,12 @@ public class ClassifierFloatMobileNet extends Classifier {
   @Override
   protected void runInference() {
     float[][] result = new float[1][1];
-    tflite.run(imgData, result);
+    float[] testInputLocations = {0.7f,0f,1f,0f,1f,0f,0f,0f,1f};
+    // Object[] testInputMeta = {0.9f, 0, testInputLocations};
+    Object[] inputArray = {imgData, testInputLocations};
+    Map<Integer, Object> outputMap = new HashMap<>();
+    outputMap.put(0, result);
+    tflite.runForMultipleInputsOutputs(inputArray, outputMap);
     setProbability(0, result[0][0]);
     setProbability(1, 1 - result[0][0]);
   }

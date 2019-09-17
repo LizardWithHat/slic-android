@@ -18,7 +18,6 @@ package org.tensorflow.lite.examples.classification.tflite;
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.RectF;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -44,8 +43,9 @@ public abstract class Classifier {
 
   /** The model type used for classification. */
   public enum Model {
-    DOMINIK,
-    KAGGLE,
+    DOMINIKMOBILENET,
+    KAGGLEMOBILENET,
+    DOMINIKRESNET50,
     QUANTIZED,
   }
 
@@ -96,10 +96,15 @@ public abstract class Classifier {
    */
   public static Classifier create(Activity activity, Model model, Device device, int numThreads)
           throws IOException {
-    if (model == Model.DOMINIK) {
-      return new ClassifierFloatMobileNet(activity, device, numThreads);
-    } else {
-      return new ClassifierFloatMobileNetWithMeanStd(activity, device, numThreads);
+    switch(model){
+      case DOMINIKMOBILENET:
+        return new ClassifierFloatMobileNetDominik(activity, device, numThreads);
+      case KAGGLEMOBILENET:
+        return new ClassifierFloatMobileNetKaggle(activity, device, numThreads);
+      case DOMINIKRESNET50:
+        return new ClassifierFloatResNet50Dominik(activity, device, numThreads);
+      default:
+        throw new IOException("Invalid Classifier Class");
     }
   }
 

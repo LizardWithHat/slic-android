@@ -16,11 +16,10 @@ limitations under the License.
 package org.tensorflow.lite.examples.classification.tflite;
 
 import android.app.Activity;
-
 import java.io.IOException;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
-public class ClassifierFloatMobileNetWithMeanStd extends Classifier {
+public class ClassifierFloatMobileNetDominik extends Classifier {
 
   /** MobileNet requires additional normalization of the used input. */
   private static final float IMAGE_MEAN = 127.5f;
@@ -33,34 +32,35 @@ public class ClassifierFloatMobileNetWithMeanStd extends Classifier {
   private float[][] labelProbArray = null;
 
   /**
-   * Initializes a {@code ClassifierFloatMobileNet}.
+   * Initializes a {@code ClassifierFloatMobileNetDominik}.
    *
    * @param activity
    */
-  public ClassifierFloatMobileNetWithMeanStd(Activity activity, Device device, int numThreads)
+  public ClassifierFloatMobileNetDominik(Activity activity, Device device, int numThreads)
       throws IOException {
     super(activity, device, numThreads);
     labelProbArray = new float[1][getNumLabels()];
   }
 
+  // Als Eingabe wird ein Bild im Format 224x224 Pixeln erwartet, bei dem die Pixel-Farbwerte zwischen 0 und 1 liegen. Jedes Pixel wird als 3 float64 (Double Precision) abgebildet.
   @Override
   public int getImageSizeX() {
-    return 100;
+    return 224;
   }
 
   @Override
   public int getImageSizeY() {
-    return 75;
+    return 224;
   }
 
   @Override
   protected String getModelPath() {
-    return "kaggle_kernel.tflite";
+    return "mobilenetV2 - stanford - full retrain.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return "labels_kaggle_kernel.txt";
+    return "labels.txt";
   }
 
   @Override
@@ -69,7 +69,7 @@ public class ClassifierFloatMobileNetWithMeanStd extends Classifier {
   }
 
   @Override
-  protected void addPixelValue(int pixelValue, float[] extremeValues) {
+  protected void addPixelValue(int pixelValue, float extremeValues[]) {
     imgData.putFloat((((pixelValue >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
     imgData.putFloat((((pixelValue >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
     imgData.putFloat(((pixelValue & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
@@ -92,7 +92,10 @@ public class ClassifierFloatMobileNetWithMeanStd extends Classifier {
 
   @Override
   protected void runInference() {
-    tflite.run(imgData, labelProbArray);
+    float[][] result = new float[1][1];
+    tflite.run(imgData, result);
+    setProbability(0, result[0][0]);
+    setProbability(1, 1 - result[0][0]);
   }
 
   @Override

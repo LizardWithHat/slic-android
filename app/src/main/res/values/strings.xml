@@ -41,8 +41,9 @@
     <string name="results">Ergebnisse</string>
     <string name="scan_qr_code_prompt">Scanne diesen QR Code mit dem zu koppelnden Gerät</string>
     <string-array name="models">
-        <item>Kaggle</item>
-        <item>Dominik</item>
+        <item>DOMINIKRESNET50</item>
+        <item>DOMINIKMOBILENET</item>
+        <item>KAGGLEMOBILENET</item>
     </string-array>
     <string-array name="devices">
         <item>CPU</item>
