@@ -9,9 +9,9 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".httpd.ClassifierWebServerActivity"></activity>
+        <activity android:name="nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerActivity"></activity>
         <activity
-            android:name=".PatientDataInputActivity"
+            android:name="nodomain.betchermartin.tensorflowlitescanner.PatientDataInputActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,11 +20,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ClassifierActivity"
+            android:name="nodomain.betchermartin.tensorflowlitescanner.ClassifierActivity"
             android:label="@string/activity_name"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".preferences.PreferenceActivity"
+            android:name="nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity"
             android:screenOrientation="portrait" />
     </application>
 

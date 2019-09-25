@@ -27,7 +27,7 @@
         android:background="#00000000">
 
 
-        <org.tensorflow.lite.examples.classification.customview.TargetView
+        <nodomain.betchermartin.tensorflowlitescanner.customview.TargetView
             android:id="@+id/targetLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -36,7 +36,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-        </org.tensorflow.lite.examples.classification.customview.TargetView>
+        </nodomain.betchermartin.tensorflowlitescanner.customview.TargetView>
 
         <FrameLayout
             android:id="@+id/container"
@@ -47,7 +47,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:context="org.tensorflow.lite.examples.classification.CameraActivity">
+            tools:context="org.tensorflow.lite.examples.classification.nodomain.tensorflow.lite.examples.classification.CameraActivity">
 
         </FrameLayout>
 
