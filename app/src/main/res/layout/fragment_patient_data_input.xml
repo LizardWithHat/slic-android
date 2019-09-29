@@ -5,7 +5,7 @@
     android:id="@+id/fragmentDataInput"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PatientDataInputFragment">
+    tools:context="nodomain.betchermartin.tensorflowlitescanner.PatientDataInputFragment">
 
     <ListView
         android:id="@+id/lvPatientDataInput"
