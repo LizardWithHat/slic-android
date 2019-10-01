@@ -38,8 +38,6 @@ import android.widget.ImageButton;
 import java.io.IOException;
 import java.util.List;
 
-import org.tensorflow.lite.examples.classification.R;
-
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;

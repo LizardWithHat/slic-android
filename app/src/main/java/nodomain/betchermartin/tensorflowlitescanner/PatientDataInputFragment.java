@@ -9,31 +9,23 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.tensorflow.lite.examples.classification.R;
 
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerActivity;
-import nodomain.betchermartin.tensorflowlitescanner.misc.ChoiceDetail;
-import nodomain.betchermartin.tensorflowlitescanner.misc.IntervalDetail;
-import nodomain.betchermartin.tensorflowlitescanner.misc.SimpleDetail;
+import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
 import java.io.IOException;
@@ -53,18 +45,18 @@ public class PatientDataInputFragment extends Fragment {
     private Classifier.Model chosenModel;
 
 
-    private ArrayList<SimpleDetail> patientData;
+    private ArrayList<StringParcelable> headerStrings;
     private ListView lwDataDetails;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         parent = getActivity().getBaseContext();
-        patientData = new ArrayList<>();
+        headerStrings = new ArrayList<>();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(parent);
         chosenModel = (Classifier.Model) getArguments().getSerializable(CHOSEN_MODEL_KEY);
 
-        //Erzeuge einzigartige Installations-ID, falls nicht vorhanden
+        // create unique installation key, if not already created
         if(sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)").equals("(NULL)")){
             sharedPreferences.edit().putString("UNIQUE_INSTALL", UUID.randomUUID().toString()).apply();
         }
@@ -92,7 +84,7 @@ public class PatientDataInputFragment extends Fragment {
         Button cancel = parentActivity.findViewById(R.id.butPatiendDataInputExit);
         cancel.setOnClickListener(s -> getActivity().finish());
 
-        PatientDataAdapter dataAdapter = new PatientDataAdapter(patientData, getContext());
+        PatientDataAdapter dataAdapter = new PatientDataAdapter(headerStrings, getContext());
         lwDataDetails = parentActivity.findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
 
@@ -100,7 +92,7 @@ public class PatientDataInputFragment extends Fragment {
         save.setOnClickListener(s -> {
             // Eingaben versenden
             Intent classifierIntent = new Intent(parent, ClassifierActivity.class);
-            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, patientData);
+            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, headerStrings);
             classifierIntent.putExtra(CameraActivity.CHOSENMODEL, chosenModel.toString());
             startActivity(classifierIntent);
         });
@@ -109,7 +101,7 @@ public class PatientDataInputFragment extends Fragment {
         startWebServer.setOnClickListener(s -> {
             // Eingaben versenden
             Intent classifierIntent = new Intent(parent, ClassifierWebServerActivity.class);
-            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, patientData);
+            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, headerStrings);
             classifierIntent.putExtra(ClassifierWebServerActivity.CHOSENMODEL, chosenModel.toString());
             startActivity(classifierIntent);
         });
@@ -126,11 +118,15 @@ public class PatientDataInputFragment extends Fragment {
     }
 
     private void createHeaderFromJson(String filename) {
+        // TODO: CSVWriter + Interface implementieren und hier nutzen
+        // TODO: InputViewFactory hier nutzen
+        // TODO: ImageWriter + Interface implementieren
+        // TODO: Strategy Pattern in Classifiers nutzen
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
-        patientData.add(new SimpleDetail("patient_id", "Patienten ID",  System.currentTimeMillis()+"_"+
+        headerStrings.add(new StringParcelable(System.currentTimeMillis()+"_"+
                 sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)")));
-        patientData.add(new SimpleDetail("image_id", "Image ID", ""));
+        headerStrings.add(new StringParcelable(""));
 
         // lade JSON Datei aus Asset Ordner
         JSONObject jObj;
@@ -156,7 +152,7 @@ public class PatientDataInputFragment extends Fragment {
                         intervalDetail.setStep(Integer.parseInt(detailRoot.getJSONObject(key).getString("step")));
                         intervalDetail.setIntervalMin(range.optInt(0));
                         intervalDetail.setIntervalMax(range.optInt(1));
-                        patientData.add(intervalDetail);
+                        headerStrings.add(intervalDetail);
                         break;
                     case "choice":
                         JSONArray choices = detailRoot.getJSONObject(key).optJSONArray("values");
@@ -164,10 +160,10 @@ public class PatientDataInputFragment extends Fragment {
                         for(int j = 0; j < choices.length(); j++){
                             choiceDetail.addChoice(choices.getString(j));
                         }
-                        patientData.add(choiceDetail);
+                        headerStrings.add(choiceDetail);
                         break;
                     default:
-                        patientData.add(new SimpleDetail(key, description, ""));
+                        headerStrings.add(new StringParcelable(key, description, ""));
                 }
             }
         } catch (IOException e){
@@ -177,11 +173,11 @@ public class PatientDataInputFragment extends Fragment {
         }
     }
 
-    private class PatientDataAdapter extends ArrayAdapter<SimpleDetail>{
-        ArrayList<SimpleDetail> data;
+    private class PatientDataAdapter extends ArrayAdapter<StringParcelable>{
+        ArrayList<StringParcelable> data;
         Context context;
 
-        PatientDataAdapter(ArrayList<SimpleDetail> data, Context context){
+        PatientDataAdapter(ArrayList<StringParcelable> data, Context context){
             super(context, R.layout.patient_data_input_item, data);
             this.data = data;
             this.context = context;
@@ -189,85 +185,20 @@ public class PatientDataInputFragment extends Fragment {
 
         private class ViewHolder{
             TextView label;
-            EditText input;
+            View inputContainer;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent){
-            SimpleDetail dataRow = data.get(position);
+            StringParcelable dataRow = data.get(position);
             ViewHolder vh;
             vh = new ViewHolder();
 
             convertView = LayoutInflater.from(getContext()).
                     inflate(R.layout.patient_data_input_item, parent, false);
-            vh.input = convertView.findViewById(R.id.tfItemInput);
+            vh.inputContainer = convertView.findViewById(R.id.inputContainerLayout);
             vh.label = convertView.findViewById(R.id.tlItemTitle);
             vh.label.setText(dataRow.getDescription());
-            vh.input.setHint(dataRow.getKey());
-            vh.input.setText(dataRow.getValue());
-            if(dataRow.getKey().equals("patient_id")) { vh.input.setText(dataRow.getValue()); }
-            else if(dataRow.getKey().equals("image_id")){
-                vh.input.setText("------------");
-                vh.input.setEnabled(false);
-            } else if(dataRow instanceof IntervalDetail){
-                // Feld nicht Editierbar, aber anklickbar für onClick-Methode stellen
-                vh.input.setFocusable(false);
-                vh.input.setFocusableInTouchMode(false);
-                vh.input.setClickable(false);
-
-                vh.input.setOnClickListener(v -> {
-                    View dialogView = getLayoutInflater().inflate(R.layout.number_picker_dialog_layout, null);
-                    NumberPicker numberPicker = dialogView.findViewById(R.id.numberPicker);
-
-                    int step = ((IntervalDetail) dataRow).getStep();
-                    int intervalMin = ((IntervalDetail) dataRow).getIntervalMin();
-                    int intervalMax = (((IntervalDetail) dataRow).getIntervalMax() - intervalMin) / step;
-                    NumberPicker.Formatter formatter = value -> Integer.toString((value * step)+intervalMin);
-                    numberPicker.setFormatter(formatter);
-                    numberPicker.setMinValue(intervalMin);
-                    numberPicker.setMaxValue(intervalMax);
-
-                    numberPicker.setWrapSelectorWheel(true);
-
-                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-                    AlertDialog dialog;
-                    dialogBuilder.setView(dialogView);
-                    dialogBuilder.setTitle(getString(R.string.choose_number));
-                    dialogBuilder.setPositiveButton(getString(R.string.set), (dialog1, which) -> ((EditText) v).setText(Integer.toString(numberPicker.getValue() * step + intervalMin)));
-                    dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog12, which) -> dialog12.dismiss());
-                    dialog = dialogBuilder.create();
-                    dialog.show();
-                });
-            } else if(dataRow instanceof ChoiceDetail){
-                // Feld nicht Editierbar, aber anklickbar für onClick-Methode stellen
-                vh.input.setFocusable(false);
-                vh.input.setFocusableInTouchMode(false);
-                vh.input.setClickable(false);
-
-                vh.input.setOnClickListener(v -> {
-                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-                    dialogBuilder.setTitle(getString(R.string.choose_list));
-                    String[] choices = ((ChoiceDetail) dataRow).getChoices().toArray(new String[0]);
-                    dialogBuilder.setItems(choices, (dialogInterface, i) -> ((EditText) v).setText(choices[i]));
-                    AlertDialog dialog = dialogBuilder.create();
-                    dialog.show();
-                });
-            }
-            vh.input.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    dataRow.setValue(s.toString());
-                }
-            });
-
 
             return convertView;
         }

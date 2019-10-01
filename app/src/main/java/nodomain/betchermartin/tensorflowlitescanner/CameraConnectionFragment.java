@@ -61,8 +61,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.tensorflow.lite.examples.classification.R;
-
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 
@@ -91,7 +89,7 @@ public class CameraConnectionFragment extends Fragment {
   private final Semaphore cameraOpenCloseLock = new Semaphore(1);
   /** A {@link OnImageAvailableListener} to receive frames as they are available. */
   private final OnImageAvailableListener imageListener;
-  /** The input size in pixels desired by TensorFlow (width and height of a square bitmap). */
+  /** The inputContainer size in pixels desired by TensorFlow (width and height of a square bitmap). */
   private final Size inputSize;
   /** The layout identifier to inflate for this Fragment. */
   private final int layout;

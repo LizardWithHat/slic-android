@@ -18,8 +18,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import org.tensorflow.lite.examples.classification.R;
-
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 

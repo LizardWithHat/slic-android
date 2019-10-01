@@ -58,8 +58,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
-import org.tensorflow.lite.examples.classification.R;
-
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;

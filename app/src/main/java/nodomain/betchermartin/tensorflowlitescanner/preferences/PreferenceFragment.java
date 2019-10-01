@@ -3,8 +3,7 @@ package nodomain.betchermartin.tensorflowlitescanner.preferences;
 import android.os.Bundle;
 
 import androidx.preference.PreferenceFragmentCompat;
-
-import org.tensorflow.lite.examples.classification.R;
+import nodomain.betchermartin.tensorflowlitescanner.R;
 
 public class PreferenceFragment extends PreferenceFragmentCompat {
 

@@ -45,14 +45,12 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import org.tensorflow.lite.examples.classification.R;
-
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.customview.TargetView;
 import nodomain.betchermartin.tensorflowlitescanner.env.BorderedText;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.misc.SimpleDetail;
+import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
 import java.io.BufferedInputStream;
@@ -415,15 +413,14 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
 
   private void setUpCsvFile(){
-      ArrayList<SimpleDetail> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
+      ArrayList<StringParcelable> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
 
       // Built Header and Patient Data text arrays from ArrayList
       ArrayList<String> patientDataList = new ArrayList<>();
       ArrayList<String> patientDataHeaderList = new ArrayList<>();
-      for(SimpleDetail s : patientData){
+      for(StringParcelable s : patientData){
           patientDataList.add(s.getValue());
           patientDataHeaderList.add(s.getKey());
-
       }
       currentPatientData = patientDataList.toArray(new String[0]);
       patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
