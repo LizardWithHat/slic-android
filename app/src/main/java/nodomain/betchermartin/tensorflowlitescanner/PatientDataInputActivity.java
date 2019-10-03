@@ -6,6 +6,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +20,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import java.io.File;
+
+import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
+import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
@@ -36,6 +42,7 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
     private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
     private static final int PERMISSIONS_REQUEST = 1;
     private Fragment inputMask;
+    private DataSenderInterface dataSender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,16 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
         if (!hasPermission()) {
             requestPermission();
         }
+        dataSender = LocalDataSender.getInstance();
+    }
+
+    @Override
+    protected void onDestroy(){
+        File sourceDir = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+        if(PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(getString(R.string.send_data_preference_key), true))
+            dataSender.compressFiles(new File(sourceDir, "out"));
+        super.onDestroy();
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,11 +24,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
+import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
+import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
+import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerActivity;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -43,13 +49,16 @@ public class PatientDataInputFragment extends Fragment {
     private SharedPreferences sharedPreferences;
     private Context parent;
     private Classifier.Model chosenModel;
-
+    private MetaDataWriterInterface metaDataWriter;
+    private DataSenderInterface dataSender;
 
     private ArrayList<StringParcelable> headerStrings;
     private ListView lwDataDetails;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        metaDataWriter = CsvFileWriter.getInstance(new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner"));
+        dataSender = LocalDataSender.getInstance();
         super.onCreate(savedInstanceState);
         parent = getActivity().getBaseContext();
         headerStrings = new ArrayList<>();
@@ -120,7 +129,6 @@ public class PatientDataInputFragment extends Fragment {
     private void createHeaderFromJson(String filename) {
         // TODO: CSVWriter + Interface implementieren und hier nutzen
         // TODO: InputViewFactory hier nutzen
-        // TODO: ImageWriter + Interface implementieren
         // TODO: Strategy Pattern in Classifiers nutzen
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID

@@ -125,7 +125,6 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
 
     @Override
     public synchronized void onDestroy() {
-        if(sharedPreferences.getBoolean(getString(R.string.send_data_preference_key), true)) runOnUiThread(getSendDataRunnable());
         webServer.stop();
         super.onDestroy();
     }
@@ -267,13 +266,6 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         return interpreter.recognizeImage(rgbFrameCropped);
     }
 
-    private Bitmap decodeBASE64Image(String base64String){
-        Bitmap result = null;
-        byte[] resultBytes = Base64.decode(base64String, Base64.DEFAULT);
-        result = BitmapFactory.decodeByteArray(resultBytes, 0, resultBytes.length);
-        return result;
-    }
-
     @Override
     public List<Classifier.Recognition> onServeReceived(String input) throws NullPointerException {
         Bitmap image = BitmapFactory.decodeFile(input);
@@ -307,48 +299,6 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         }
         return pictureRunnable;
     }
-
-    private Runnable getSendDataRunnable(){
-        if(dataRunnable == null) {
-            dataRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    // Zippe alle Dateien im Datenordner in ein Archiv mit Zeitstempel in "out" und "sende" sie
-                    File archiveFolder = new File(destination, "out");
-                    File archiveFile = new File(archiveFolder, "archive_"+System.currentTimeMillis()+".zip");
-                    File[] toBeArchived = destination.listFiles();
-                    archiveFolder.mkdir();
-                    BufferedInputStream in;
-                    FileOutputStream fileOut;
-                    ZipOutputStream zipOut;
-                    try {
-                        byte[] rawData = new byte[1024];
-                        fileOut = new FileOutputStream(archiveFile);
-                        zipOut = new ZipOutputStream(new BufferedOutputStream(fileOut));
-                        for(File f : toBeArchived){
-                            // Überspringe Unterordner (wie etwa "out" Ordner) und .nomedia-Datei
-                            if(f.isDirectory() || f.getName().equals(".nomedia")) continue;
-                            LOGGER.d("Archiving File "+f.getName());
-                            in = new BufferedInputStream(new FileInputStream(f), rawData.length);
-                            ZipEntry entry = new ZipEntry(f.getName());
-                            zipOut.putNextEntry(entry);
-                            int count;
-                            while((count = in.read(rawData, 0, rawData.length)) != -1) {
-                                zipOut.write(rawData, 0, count);
-                            }
-                            f.delete();
-                        }
-                        zipOut.close();
-                    } catch (Exception e){
-                        LOGGER.e(e.getMessage());
-                    }
-                    LOGGER.d("Ich zippe/sende Daten!");
-                }
-            };
-        }
-        return dataRunnable;
-    }
-
 
     private void setUpCsvFile(){
         ArrayList<StringParcelable> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
