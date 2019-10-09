@@ -17,6 +17,7 @@ package nodomain.betchermartin.tensorflowlitescanner.tflite;
 
 import android.app.Activity;
 
+import java.io.File;
 import java.io.IOException;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
@@ -55,12 +56,12 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return "kaggle_kernel.tflite";
+    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/kagglemobilenet/kaggle_kernel.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return "labels_kaggle_kernel.txt";
+    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/kagglemobilenet/labels_kaggle_kernel.txt";
   }
 
   @Override
@@ -96,5 +97,5 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
   }
 
   @Override
-  public String getDataDetailPath() { return "skin-cancer-data-detail.json"; }
+  public String getDataDetailPath() { return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
 }

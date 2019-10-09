@@ -109,7 +109,6 @@ public abstract class CameraActivity extends AppCompatActivity
   private Spinner deviceSpinner;
   private TextView threadsTextView;
   private ImageButton butSettings;
-  protected String[] currentPatientData;
   protected Size[] supportedSizes;
 
   private Classifier.Model model;

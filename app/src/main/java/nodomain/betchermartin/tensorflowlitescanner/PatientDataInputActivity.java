@@ -1,46 +1,40 @@
 package nodomain.betchermartin.tensorflowlitescanner;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.stream.Stream;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
-import java.io.File;
-
 import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
 import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
+import static android.os.Environment.MEDIA_MOUNTED;
+import static android.os.Environment.getExternalStorageState;
+
 public class PatientDataInputActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private Spinner modelChooser;
     private Classifier.Model chosenModel;
-
-    private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
-    // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
-    // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
-    private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    // Um den Webserver zu benutzen muss die WiFi Nutzung genehmigt werden.
-    private static final String PERMISSION_WIFI = Manifest.permission.ACCESS_WIFI_STATE;
-    private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
-    private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
-    private static final int PERMISSIONS_REQUEST = 1;
     private Fragment inputMask;
     private DataSenderInterface dataSender;
 
@@ -53,20 +47,27 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
         setSupportActionBar(toolbar);
 
         modelChooser = findViewById(R.id.spinnerModelChooser);
+        ArrayAdapter<String> modelChooserAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, android.R.id.text1);
+
+        for(Classifier.Model m : Classifier.Model.values()){
+            modelChooserAdapter.add(m.toString());
+        }
+
+        modelChooser.setAdapter(modelChooserAdapter);
         modelChooser.setOnItemSelectedListener(this);
 
-        if (!hasPermission()) {
-            requestPermission();
-        }
         dataSender = LocalDataSender.getInstance();
     }
 
     @Override
     protected void onDestroy(){
-        File sourceDir = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
-        if(PreferenceManager.getDefaultSharedPreferences(this)
-                .getBoolean(getString(R.string.send_data_preference_key), true))
-            dataSender.compressFiles(new File(sourceDir, "out"));
+        if(getExternalStorageState().equals(MEDIA_MOUNTED)) {
+            File sourceDir = getExternalFilesDir(null);
+            if (PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean(getString(R.string.send_data_preference_key), true)
+                    && sourceDir.exists())
+                dataSender.compressFiles(new File(sourceDir, "out"));
+        }
         super.onDestroy();
     }
 
@@ -94,41 +95,6 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
         inputMask.setArguments(extras);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.viewFragmentPlaceholder, inputMask).commit();
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(
-            final int requestCode, final String[] permissions, final int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST) {
-            if (grantResults.length <= 0
-                    && grantResults[0] == PackageManager.PERMISSION_DENIED
-                    && grantResults[1] == PackageManager.PERMISSION_DENIED
-                    && grantResults[2] == PackageManager.PERMISSION_DENIED
-                    && grantResults[3] == PackageManager.PERMISSION_DENIED
-                    && grantResults[4] == PackageManager.PERMISSION_DENIED) {
-                requestPermission();
-            }
-        }
-    }
-
-    private boolean hasPermission() {
-        return ContextCompat.checkSelfPermission(this, PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_WIFI) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_INTERNET) == PackageManager.PERMISSION_GRANTED &
-        ContextCompat.checkSelfPermission(this, PERMISSION_NETWORK) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, PERMISSION_CAMERA)) {
-            Toast.makeText(
-                    this,
-                    "Camera permission is required for this App",
-                    Toast.LENGTH_LONG)
-                    .show();
-        }
-        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE, PERMISSION_WIFI}, PERMISSIONS_REQUEST);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class LocalDataSender implements DataSenderInterface {
 
     @Override
     public boolean compressFiles(File sourceFolder) {
-        File archiveFolder = new File(sourceFolder, "out");
+        File archiveFolder = new File(sourceFolder, "out_fake_send");
         File archiveFile = new File(archiveFolder, "archive_"+System.currentTimeMillis()+".zip");
         File[] toBeArchived = sourceFolder.listFiles();
         archiveFolder.mkdir();

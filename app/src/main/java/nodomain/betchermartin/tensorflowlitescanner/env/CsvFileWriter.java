@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 public class CsvFileWriter implements MetaDataWriterInterface {
     private static CsvFileWriter instance;
@@ -24,6 +25,7 @@ public class CsvFileWriter implements MetaDataWriterInterface {
 
     @Override
     public boolean writeMetaData(LinkedHashMap<String, List<Parcelable>> listOfObjects) {
+        if(!csvFile.exists()) writeHeaderLine(listOfObjects.keySet());
         if(csvFile != null){
             FileWriter csvWriter;
             try {
@@ -36,8 +38,7 @@ public class CsvFileWriter implements MetaDataWriterInterface {
                         if(sb.length() == 0 || sb.charAt(sb.length() - 1) == ','){
                             sb.append(item.toString());
                         }else {
-                            sb.append(";");
-                            sb.append(item.toString());
+                            sb.append(";").append(item.toString());
                         }
                     }
                     sb.append(",");
@@ -52,5 +53,21 @@ public class CsvFileWriter implements MetaDataWriterInterface {
                 return false;
             }
         } else { return false; }
+    }
+
+    private void writeHeaderLine(Set<String> headers) {
+        FileWriter csvWriter;
+        try{
+            csvWriter = new FileWriter(csvFile, true);
+            StringBuilder sb = new StringBuilder();
+            for(String key : headers){
+                sb.append(key).append(",");
+            }
+            csvWriter.append(sb).append("\n");
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            LOGGER.e("Error writing CSV Header: " + e.getMessage());
+        }
     }
 }

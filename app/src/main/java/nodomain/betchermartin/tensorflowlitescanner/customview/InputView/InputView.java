@@ -5,15 +5,16 @@ import android.os.Parcelable;
 import android.view.View;
 
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.Nullable;
 
 public abstract class InputView {
     protected List<Parcelable> listOfInputs;
     protected Context context;
-    protected Object extras;
+    protected Map<String, Object> extras;
 
-    public InputView(Context context, List<Parcelable> listOfInputs, @Nullable Object extras){
+    public InputView(Context context, List<Parcelable> listOfInputs, Map<String, Object> extras){
         this.context = context;
         this.listOfInputs = listOfInputs;
         this.extras = extras;

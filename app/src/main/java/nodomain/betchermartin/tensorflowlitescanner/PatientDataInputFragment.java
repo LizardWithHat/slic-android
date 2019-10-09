@@ -9,21 +9,40 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-
-import androidx.fragment.app.Fragment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import androidx.fragment.app.Fragment;
+import nodomain.betchermartin.tensorflowlitescanner.customview.InputView.InputViewFactory;
 import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
 import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
 import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
@@ -33,14 +52,6 @@ import nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerAct
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.UUID;
-
 public class PatientDataInputFragment extends Fragment {
 
     public static final String RESULT_STRING = "patientdataresultstring";
@@ -49,19 +60,18 @@ public class PatientDataInputFragment extends Fragment {
     private SharedPreferences sharedPreferences;
     private Context parent;
     private Classifier.Model chosenModel;
-    private MetaDataWriterInterface metaDataWriter;
-    private DataSenderInterface dataSender;
 
-    private ArrayList<StringParcelable> headerStrings;
+    private LinkedHashMap<String, List<Parcelable>> patientData;
+    private LinkedHashMap<String, HashMap<String, Object>> inputItemExtras;
     private ListView lwDataDetails;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        metaDataWriter = CsvFileWriter.getInstance(new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner"));
-        dataSender = LocalDataSender.getInstance();
         super.onCreate(savedInstanceState);
+
         parent = getActivity().getBaseContext();
-        headerStrings = new ArrayList<>();
+        patientData = new LinkedHashMap<>();
+        inputItemExtras = new LinkedHashMap<>();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(parent);
         chosenModel = (Classifier.Model) getArguments().getSerializable(CHOSEN_MODEL_KEY);
 
@@ -93,26 +103,33 @@ public class PatientDataInputFragment extends Fragment {
         Button cancel = parentActivity.findViewById(R.id.butPatiendDataInputExit);
         cancel.setOnClickListener(s -> getActivity().finish());
 
-        PatientDataAdapter dataAdapter = new PatientDataAdapter(headerStrings, getContext());
+        PatientDataAdapter dataAdapter = new PatientDataAdapter(new ArrayList<>(patientData.keySet()), getContext());
         lwDataDetails = parentActivity.findViewById(R.id.lvPatientDataInput);
         lwDataDetails.setAdapter(dataAdapter);
 
         Button save = getActivity().findViewById(R.id.butPatiendDataInputSave);
-        save.setOnClickListener(s -> {
-            // Eingaben versenden
-            Intent classifierIntent = new Intent(parent, ClassifierActivity.class);
-            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, headerStrings);
-            classifierIntent.putExtra(CameraActivity.CHOSENMODEL, chosenModel.toString());
-            startActivity(classifierIntent);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                // Eingaben versenden
+                Intent classifierIntent = new Intent(parent, ClassifierActivity.class);
+                classifierIntent.putExtra(RESULT_STRING, patientData);
+                classifierIntent.putExtra(CameraActivity.CHOSENMODEL, chosenModel.toString());
+                startActivity(classifierIntent);
+            }
         });
 
         Button startWebServer = getActivity().findViewById(R.id.butStartWebServer);
-        startWebServer.setOnClickListener(s -> {
-            // Eingaben versenden
-            Intent classifierIntent = new Intent(parent, ClassifierWebServerActivity.class);
-            classifierIntent.putParcelableArrayListExtra(RESULT_STRING, headerStrings);
-            classifierIntent.putExtra(ClassifierWebServerActivity.CHOSENMODEL, chosenModel.toString());
-            startActivity(classifierIntent);
+        startWebServer.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                // Eingaben versenden
+                Intent classifierIntent = new Intent(parent, ClassifierWebServerActivity.class);
+                classifierIntent.putExtra(RESULT_STRING, patientData);
+                classifierIntent.putExtra(ClassifierWebServerActivity.CHOSENMODEL, chosenModel.toString());
+                startActivity(classifierIntent);
+            }
         });
 
         ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -126,52 +143,59 @@ public class PatientDataInputFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        patientData.clear();
+        inputItemExtras.clear();
+    }
+
     private void createHeaderFromJson(String filename) {
-        // TODO: CSVWriter + Interface implementieren und hier nutzen
-        // TODO: InputViewFactory hier nutzen
-        // TODO: Strategy Pattern in Classifiers nutzen
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
-        headerStrings.add(new StringParcelable(System.currentTimeMillis()+"_"+
+        List<Parcelable> patientIdList = new LinkedList<Parcelable>();
+        patientIdList.add(new StringParcelable(System.currentTimeMillis() + "_" +
                 sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)")));
-        headerStrings.add(new StringParcelable(""));
+        patientData.put("patient_id", patientIdList);
+        HashMap<String, Object> patientIdExtras = new HashMap<>();
+        patientIdExtras.put("description", "Patienten ID");
+        patientIdExtras.put("type", "generatedtext");
+        inputItemExtras.put("patient_id", patientIdExtras);
+
+        List<Parcelable> pictureIdList = new LinkedList<Parcelable>();
+        pictureIdList.add(new StringParcelable(""));
+        patientData.put("picture_id", pictureIdList);
+        HashMap<String, Object> pictureIdExtras = new HashMap<>();
+        pictureIdExtras.put("description", "Bild ID");
+        pictureIdExtras.put("type", "anonymousgeneratedtext");
+        inputItemExtras.put("picture_id", pictureIdExtras);
 
         // lade JSON Datei aus Asset Ordner
         JSONObject jObj;
         JSONObject detailRoot;
         InputStream in;
         try{
-            in = parent.getAssets().open(filename);
+            in = new FileInputStream(filename);
             int size = in.available();
             byte[] buffer = new byte[size];
             in.read(buffer);
             in.close();
             jObj = new JSONObject(new String(buffer, StandardCharsets.UTF_8));
             detailRoot = jObj.getJSONObject("data_details");
-            Iterator<String> i = detailRoot.keys();
-            while(i.hasNext()){
-                String key = i.next();
-                String description = detailRoot.getJSONObject(key).getString("description");
-                String type = detailRoot.getJSONObject(key).getString("type");
-                switch(type){
-                    case "interval":
-                        JSONArray range = detailRoot.getJSONObject(key).optJSONArray("range");
-                        IntervalDetail intervalDetail = new IntervalDetail(key, description, "");
-                        intervalDetail.setStep(Integer.parseInt(detailRoot.getJSONObject(key).getString("step")));
-                        intervalDetail.setIntervalMin(range.optInt(0));
-                        intervalDetail.setIntervalMax(range.optInt(1));
-                        headerStrings.add(intervalDetail);
-                        break;
-                    case "choice":
-                        JSONArray choices = detailRoot.getJSONObject(key).optJSONArray("values");
-                        ChoiceDetail choiceDetail = new ChoiceDetail(key, description, "");
-                        for(int j = 0; j < choices.length(); j++){
-                            choiceDetail.addChoice(choices.getString(j));
-                        }
-                        headerStrings.add(choiceDetail);
-                        break;
-                    default:
-                        headerStrings.add(new StringParcelable(key, description, ""));
+            Iterator<String> rootIterator = detailRoot.keys();
+            while(rootIterator.hasNext()){
+                String key = rootIterator.next();
+
+                List<Parcelable> keyList = new LinkedList<Parcelable>();
+                patientData.put(key, keyList);
+                HashMap<String, Object> childExtras = new HashMap<>();
+                inputItemExtras.put(key, childExtras);
+
+                JSONObject childObject = detailRoot.getJSONObject(key);
+                Iterator<String> childIterator = childObject.keys();
+                while(childIterator.hasNext()){
+                    String subKey = childIterator.next();
+                    childExtras.put(subKey, childObject.get(subKey));
                 }
             }
         } catch (IOException e){
@@ -181,11 +205,11 @@ public class PatientDataInputFragment extends Fragment {
         }
     }
 
-    private class PatientDataAdapter extends ArrayAdapter<StringParcelable>{
-        ArrayList<StringParcelable> data;
+    private class PatientDataAdapter extends ArrayAdapter<String>{
+        ArrayList<String> data;
         Context context;
 
-        PatientDataAdapter(ArrayList<StringParcelable> data, Context context){
+        PatientDataAdapter(ArrayList<String> data, Context context){
             super(context, R.layout.patient_data_input_item, data);
             this.data = data;
             this.context = context;
@@ -193,20 +217,24 @@ public class PatientDataInputFragment extends Fragment {
 
         private class ViewHolder{
             TextView label;
-            View inputContainer;
+            LinearLayout inputContainer;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent){
-            StringParcelable dataRow = data.get(position);
+            List<Parcelable> dataInputList = patientData.get(data.get(position));
+            Map<String, Object> dataExtras = inputItemExtras.get(data.get(position));
             ViewHolder vh;
             vh = new ViewHolder();
 
             convertView = LayoutInflater.from(getContext()).
                     inflate(R.layout.patient_data_input_item, parent, false);
-            vh.inputContainer = convertView.findViewById(R.id.inputContainerLayout);
             vh.label = convertView.findViewById(R.id.tlItemTitle);
-            vh.label.setText(dataRow.getDescription());
+            vh.label.setText((String) dataExtras.get("description"));
+
+            String type = (String) dataExtras.get("type");
+            vh.inputContainer = convertView.findViewById(R.id.inputContainerLayout);
+            vh.inputContainer.addView(InputViewFactory.createInputView(this.getContext(), type, dataInputList, dataExtras));
 
             return convertView;
         }

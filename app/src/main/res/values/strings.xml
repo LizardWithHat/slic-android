@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Seelab Skin Cancer Scanner</string>
     <string name="description_info">Info</string>
-    <string name="request_permission">This App needs camera permission.</string>
-    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="request_permission">Diese App benötigt Zugriff auf die Kamera.</string>
+    <string name="camera_error">Dieses Gerät unterstützt nicht die Camera2 API.</string>
     <string name="toggle_turn_on">NN:On</string>
     <string name="toggle_turn_off">NN:Off</string>
-    <string name="toggle">Use NNAPI</string>
+    <string name="toggle">Benutze NNAPI</string>
     <string name="tflite">tflite</string>
     <string name="nnapi">NNAPI</string>
     <string name="threads">Threads:</string>
@@ -28,8 +28,8 @@
     <string name="choose_number">Bitte Nummer auswählen</string>
     <string name="choose_list">Bitte Eintrag auswählen</string>
 
-    <string name="collect_data_preference_key">collect_data_preference_key</string>
-    <string name="send_data_preference_key">send_data_preference_key</string>
+    <string name="collect_data_preference_key" translatable="false">collect_data_preference_key</string>
+    <string name="send_data_preference_key" translatable="false">send_data_preference_key</string>
     <string name="exit">Beenden</string>
     <string name="inferenceTime">Inferenze Zeit:</string>
     <string name="rotation">Rotation</string>
@@ -40,14 +40,16 @@
     <string name="webserver_running">Webserver läuft</string>
     <string name="results">Ergebnisse</string>
     <string name="scan_qr_code_prompt">Scanne diesen QR Code mit dem zu koppelnden Gerät</string>
-    <string-array name="models">
-        <item>DOMINIKRESNET50</item>
-        <item>DOMINIKMOBILENET</item>
-        <item>KAGGLEMOBILENET</item>
-    </string-array>
+
     <string-array name="devices">
         <item>CPU</item>
         <item>GPU</item>
         <item>NNAPI</item>
     </string-array>
+    <string name="channel_id" translatable="false">SeelabScannerChannelID</string>
+    <string name="notification_name" translatable="false">SeelabScannerNotificationID</string>
+    <string name="notification_description" translatable="false">Seelab-Scanner Notification ID</string>
+    <string name="initialSetup" translatable="false">initialSetupKey</string>
+    <string name="allow_updates_preference_key" translatable="false">allow_updates_preference_key</string>
+    <string name="loading">Lade...</string>
 </resources>

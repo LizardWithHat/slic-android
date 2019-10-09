@@ -6,11 +6,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import nodomain.betchermartin.tensorflowlitescanner.R;
@@ -23,14 +28,13 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
  *      "choices"          : all available choices
  */
 public class ChoiceInputView extends InputView {
-    public ChoiceInputView(Context context, List<Parcelable> listOfInputs, @Nullable Object extras) {
+    public ChoiceInputView(Context context, List<Parcelable> listOfInputs, Map<String, Object> extras) {
         super(context, listOfInputs, extras);
     }
 
     @Override
     public View createInputView() {
-        HashMap<String, List<String>> extraStrings = (HashMap<String, List<String>>) extras;
-        ConstraintLayout view = new ConstraintLayout(context);
+        LinearLayout view = new LinearLayout(context);
         EditText textField = new EditText(context);
         view.addView(textField);
 
@@ -42,8 +46,18 @@ public class ChoiceInputView extends InputView {
         textField.setOnClickListener(v -> {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
             dialogBuilder.setTitle(context.getString(R.string.choose_list));
-            String[] choices = (String[]) extraStrings.get("choices").toArray();
-            dialogBuilder.setItems(choices, (dialogInterface, i) -> ((EditText) v).setText(choices[i]));
+
+            JSONArray jsonArray = (JSONArray) extras.get("values");
+            List<String> choices = new ArrayList<>();
+            for(int i = 0; i < jsonArray.length(); i++){
+                try {
+                    choices.add(jsonArray.getString(i));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            dialogBuilder.setItems(choices.toArray(new String[choices.size()]), (dialogInterface, i) -> ((EditText) v).setText(choices.get(i)));
             AlertDialog dialog = dialogBuilder.create();
             dialog.show();
         });

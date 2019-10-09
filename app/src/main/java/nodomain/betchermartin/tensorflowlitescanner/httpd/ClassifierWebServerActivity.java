@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Base64;
@@ -30,8 +31,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import nodomain.betchermartin.tensorflowlitescanner.PatientDataInputFragment;
 import nodomain.betchermartin.tensorflowlitescanner.R;
+import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
+import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
@@ -48,7 +51,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -71,17 +76,15 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
     private TextView resultsTextView;
     private TextView resultsTextViewTitle;
     private TextView ipAdressTextView;
-    private int defaultPort = 8080;
+    private final int defaultPort = 8080;
     private String ipAdress;
     private Runnable pictureRunnable;
-    private Runnable dataRunnable;
     private File destination;
-    private String[] patientDataHeaders;
-    protected File currentCsvFile = null;
-    protected String[] currentPatientData;
+    protected LinkedHashMap<String, List<Parcelable>> currentPatientData;
     private SharedPreferences sharedPreferences;
     private HandlerThread handlerThread;
     private Handler handler;
+    private MetaDataWriterInterface metaDataWriter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,8 +94,11 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         resultsTextView = findViewById(R.id.tvWebServerActivityResults);
         resultsTextViewTitle = findViewById(R.id.tfWebServerActivityResultTitle);
         ipAdressTextView = findViewById(R.id.tvIpAddressTextView);
+        currentPatientData = getIntent().getParcelableExtra(PatientDataInputFragment.RESULT_STRING);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        metaDataWriter = CsvFileWriter.getInstance(new File(getExternalFilesDir(null), "out"));
 
         ipAdress = getNetworkIpAdress();
         ipAdressTextView.setText(ipAdress+":"+defaultPort);
@@ -112,7 +118,7 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         }
 
         // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
-        destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
+        destination = new File(getExternalFilesDir(null), "out");
         if (destination.mkdir()) {
             File nomedia = new File(destination, ".nomedia");
             try {
@@ -138,11 +144,6 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
         handlerThread = new HandlerThread("inference");
         handlerThread.start();
         handler = new Handler(handlerThread.getLooper());
-
-        // Lege CSV Header nur an wenn Präferenz dafür aktiviert
-        if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), true)) {
-            setUpCsvFile();
-        }
     }
 
     @Override
@@ -289,60 +290,12 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
                     } catch (FileNotFoundException e) {
                         LOGGER.e("Error saving Image: " + e.getMessage());
                     }
-                    // If Patient data entered, write metadata to csv file
-                    if(currentPatientData != null){
-                        currentPatientData[1] = destinationFile.getName();
-                        writeCsvLine(currentPatientData);
-                    }
+                    currentPatientData.get("picture_id").clear();
+                    currentPatientData.get("picture_id").add(new StringParcelable(destinationFile.getName()));
+                    metaDataWriter.writeMetaData(currentPatientData);
                 }
             };
         }
         return pictureRunnable;
-    }
-
-    private void setUpCsvFile(){
-        ArrayList<StringParcelable> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
-
-        // Built Header and Patient Data text arrays from ArrayList
-        ArrayList<String> patientDataList = new ArrayList<>();
-        ArrayList<String> patientDataHeaderList = new ArrayList<>();
-        for(StringParcelable s : patientData){
-            patientDataList.add(s.getValue());
-            patientDataHeaderList.add(s.getKey());
-
-        }
-        currentPatientData = patientDataList.toArray(new String[0]);
-        patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
-        // Set new CSV File
-        File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
-        currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
-
-        if(currentCsvFile.exists()) return;
-
-        // Write Header to new CSV
-        writeCsvLine(patientDataHeaders);
-    }
-
-    protected void writeCsvLine(String[] data){
-        if(currentCsvFile != null){
-            FileWriter csvWriter;
-            try {
-                csvWriter = new FileWriter(currentCsvFile, true);
-                StringBuilder sb = new StringBuilder();
-                for(String s : data){
-                    if(sb.length() == 0){
-                        sb.append(s);
-                    }else {
-                        sb.append(",");
-                        sb.append(s);
-                    }
-                }
-                csvWriter.append(sb).append("\n");
-                csvWriter.flush();
-                csvWriter.close();
-            } catch (IOException e) {
-                LOGGER.e("Error writing CSV: " + e.getMessage());
-            }
-        }
     }
 }

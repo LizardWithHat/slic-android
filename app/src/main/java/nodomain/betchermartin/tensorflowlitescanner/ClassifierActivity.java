@@ -28,6 +28,7 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaActionSound;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Size;
@@ -48,8 +49,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.customview.TargetView;
 import nodomain.betchermartin.tensorflowlitescanner.env.BorderedText;
+import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
+import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
 
@@ -62,6 +65,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -89,17 +93,20 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private Runnable pictureRunnable;
   private FloatingActionButton fabTrigger;
   private File destination;
-  private String[] patientDataHeaders;
   private Boolean boolTriggerActivated = false;
-  protected File currentCsvFile = null;
   private float scaleFactor = 1.0f;
   private ScaleGestureDetector scaleGestureDetector;
+  private MetaDataWriterInterface metaDataWriter;
+  private LinkedHashMap<String, List<Parcelable>> currentPatientData;
 
   @Override
   public void onCreate(Bundle savedInstance){
       super.onCreate(savedInstance);
-      sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+      sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+      currentPatientData = getIntent().getParcelableExtra(PatientDataInputFragment.RESULT_STRING);
+
+      metaDataWriter = CsvFileWriter.getInstance(new File(getExternalFilesDir(null), "out"));
 
       fabTrigger = findViewById(R.id.fabTrigger);
       fabTrigger.setOnClickListener(v -> {
@@ -155,15 +162,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       }));
 
       scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
-  }
-
-  @Override
-  public synchronized  void onResume() {
-      // Lege CSV Header nur an wenn Präferenz dafür aktiviert
-      if(sharedPreferences.getBoolean(getString(R.string.collect_data_preference_key), true)) {
-          setUpCsvFile();
-      }
-      super.onResume();
   }
 
   @Override
@@ -299,15 +297,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       classifier.close();
       classifier = null;
     }
-    if (device == Classifier.Device.GPU && model == Classifier.Model.QUANTIZED) {
-      LOGGER.d("Not creating classifier: GPU doesn't support quantized models.");
-      runOnUiThread(
-          () -> {
-            Toast.makeText(this, "GPU does not yet supported quantized models.", Toast.LENGTH_LONG)
-                .show();
-          });
-      return;
-    }
     try {
       LOGGER.d(
           "Creating classifier (model=%s, device=%s, numThreads=%d)", model, device, numThreads);
@@ -352,61 +341,14 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                   } catch (FileNotFoundException e) {
                       LOGGER.e("Error saving Image: " + e.getMessage());
                   }
-                  // If Patient data entered, write metadata to csv file
-                  if(currentPatientData != null){
-                      currentPatientData[1] = destinationFile.getName();
-                      writeCsvLine(currentPatientData);
-                  }
+                  currentPatientData.get("picture_id").clear();
+                  currentPatientData.get("picture_id").add(new StringParcelable(destinationFile.getName()));
+                  metaDataWriter.writeMetaData(currentPatientData);
               }
           };
       }
       return pictureRunnable;
   }
-
-  private void setUpCsvFile(){
-      ArrayList<StringParcelable> patientData = getIntent().getExtras().getParcelableArrayList(PatientDataInputFragment.RESULT_STRING);
-
-      // Built Header and Patient Data text arrays from ArrayList
-      ArrayList<String> patientDataList = new ArrayList<>();
-      ArrayList<String> patientDataHeaderList = new ArrayList<>();
-      for(StringParcelable s : patientData){
-          patientDataList.add(s.getValue());
-          patientDataHeaderList.add(s.getKey());
-      }
-      currentPatientData = patientDataList.toArray(new String[0]);
-      patientDataHeaders = patientDataHeaderList.toArray(new String[0]);
-      // Set new CSV File
-      File destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
-      currentCsvFile = new File(destination, "patient_" + currentPatientData[0] + ".csv");
-
-      if(currentCsvFile.exists()) return;
-
-      // Write Header to new CSV
-      writeCsvLine(patientDataHeaders);
-  }
-
-    protected void writeCsvLine(String[] data){
-        if(currentCsvFile != null){
-            FileWriter csvWriter;
-            try {
-                csvWriter = new FileWriter(currentCsvFile, true);
-                StringBuilder sb = new StringBuilder();
-                for(String s : data){
-                    if(sb.length() == 0){
-                        sb.append(s);
-                    }else {
-                        sb.append(",");
-                        sb.append(s);
-                    }
-                }
-                csvWriter.append(sb).append("\n");
-                csvWriter.flush();
-                csvWriter.close();
-            } catch (IOException e) {
-                LOGGER.e("Error writing CSV: " + e.getMessage());
-            }
-        }
-    }
 
   @Override
   public void onImageAvailable(final ImageReader reader) {

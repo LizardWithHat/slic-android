@@ -6,6 +6,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class TextInputView extends InputView {
     @Override
     public View createInputView() {
 
-        ConstraintLayout view = new ConstraintLayout(context);
+        LinearLayout view = new LinearLayout(context);
         EditText textField = new EditText(context);
 
         view.addView(textField);

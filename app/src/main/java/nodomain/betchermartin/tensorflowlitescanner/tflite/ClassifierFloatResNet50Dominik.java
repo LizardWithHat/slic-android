@@ -16,7 +16,9 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.tflite;
 
 import android.app.Activity;
+import android.os.Environment;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,12 +60,12 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return "skin-cancer-ResNet50.tflite";
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikresnet50/skin-cancer-ResNet50.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return "labels.txt";
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/labels.txt";
   }
 
   @Override
@@ -107,5 +109,6 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
   }
 
   @Override
-  public String getDataDetailPath() { return "skin-cancer-data-detail.json"; }
+  public String getDataDetailPath() {
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
 }

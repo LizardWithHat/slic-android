@@ -22,6 +22,8 @@ import android.graphics.RectF;
 import android.os.SystemClock;
 import android.os.Trace;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,13 +42,13 @@ import org.tensorflow.lite.gpu.GpuDelegate;
 /** A classifier specialized to label images using TensorFlow Lite. */
 public abstract class Classifier {
   private static final Logger LOGGER = new Logger();
+  protected final Activity context;
 
   /** The model type used for classification. */
   public enum Model {
     DOMINIKMOBILENET,
     KAGGLEMOBILENET,
     DOMINIKRESNET50,
-    QUANTIZED,
   }
 
   /** The runtime device type used for executing classification. */
@@ -71,7 +73,7 @@ public abstract class Classifier {
   private final Interpreter.Options tfliteOptions = new Interpreter.Options();
 
   /** The loaded TensorFlow Lite model. */
-  private MappedByteBuffer tfliteModel;
+  private File tfliteModel;
 
   /** Labels corresponding to the output of the vision model. */
   private List<String> labels;
@@ -180,7 +182,8 @@ public abstract class Classifier {
 
   /** Initializes a {@code Classifier}. */
   protected Classifier(Activity activity, Device device, int numThreads) throws IOException {
-    tfliteModel = loadModelFile(activity);
+    context = activity;
+    tfliteModel = loadModelFile();
     switch (device) {
       case NNAPI:
         tfliteOptions.setUseNNAPI(true);
@@ -210,7 +213,7 @@ public abstract class Classifier {
   private List<String> loadLabelList(Activity activity) throws IOException {
     List<String> labels = new ArrayList<String>();
     BufferedReader reader =
-        new BufferedReader(new InputStreamReader(activity.getAssets().open(getLabelPath())));
+        new BufferedReader(new InputStreamReader(new FileInputStream(getLabelPath())));
     String line;
     while ((line = reader.readLine()) != null) {
       labels.add(line);
@@ -220,13 +223,8 @@ public abstract class Classifier {
   }
 
   /** Memory-map the model file in Assets. */
-  private MappedByteBuffer loadModelFile(Activity activity) throws IOException {
-    AssetFileDescriptor fileDescriptor = activity.getAssets().openFd(getModelPath());
-    FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-    FileChannel fileChannel = inputStream.getChannel();
-    long startOffset = fileDescriptor.getStartOffset();
-    long declaredLength = fileDescriptor.getDeclaredLength();
-    return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+  private File loadModelFile() throws IOException {
+    return new File(getModelPath());
   }
 
   /** Writes Image data into a {@code ByteBuffer}. */

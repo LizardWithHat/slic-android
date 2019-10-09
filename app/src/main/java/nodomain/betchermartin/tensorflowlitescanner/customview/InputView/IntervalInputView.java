@@ -3,17 +3,17 @@ package nodomain.betchermartin.tensorflowlitescanner.customview.InputView;
 import android.content.Context;
 import android.os.Parcelable;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import nodomain.betchermartin.tensorflowlitescanner.R;
@@ -29,14 +29,13 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
  *      "intervalMin"   : Minimum value
  */
 public class IntervalInputView extends InputView {
-    public IntervalInputView(Context context, List<Parcelable> listOfInputs, @Nullable Object extras) {
+    public IntervalInputView(Context context, List<Parcelable> listOfInputs, Map<String, Object> extras) {
         super(context, listOfInputs, extras);
     }
 
     @Override
     public View createInputView() {
-        HashMap<String, String> extraStrings = (HashMap<String, String>) extras;
-        ConstraintLayout view = new ConstraintLayout(context);
+        LinearLayout view = new LinearLayout(context);
         EditText textField = new EditText(context);
         view.addView(textField);
 
@@ -49,9 +48,9 @@ public class IntervalInputView extends InputView {
             View dialogView = inflater.inflate(R.layout.number_picker_dialog_layout, null);
             NumberPicker numberPicker = dialogView.findViewById(R.id.numberPicker);
 
-            int step = Integer.parseInt(extraStrings.get("step"));
-            int intervalMin = Integer.parseInt(extraStrings.get("intervalMin"));
-            int intervalMax = (Integer.parseInt(extraStrings.get("intervalMax")) - intervalMin) / step;
+            int step = (int) extras.get("step");
+            int intervalMin = (int) extras.get("intervalMin");
+            int intervalMax = ((int) extras.get("intervalMax") - intervalMin) / step;
             NumberPicker.Formatter formatter = value -> Integer.toString((value * step)+intervalMin);
             numberPicker.setFormatter(formatter);
             numberPicker.setMinValue(intervalMin);
@@ -81,7 +80,7 @@ public class IntervalInputView extends InputView {
             @Override
             public void afterTextChanged(Editable s) {
                 if(listOfInputs.size() > 0) {
-                    ((StringParcelable) listOfInputs.get(0)).setValue(s.toString());
+                    ((IntegerParcelable) listOfInputs.get(0)).setValue(Integer.parseInt(s.toString()));
                 } else {
                     listOfInputs.add(new IntegerParcelable(Integer.parseInt(s.toString())));
                 }

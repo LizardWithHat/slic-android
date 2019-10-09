@@ -16,6 +16,8 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.tflite;
 
 import android.app.Activity;
+
+import java.io.File;
 import java.io.IOException;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
@@ -55,12 +57,12 @@ public class ClassifierFloatMobileNetDominik extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return "mobilenetV2 - stanford - full retrain.tflite";
+    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/mobilenetV2 - stanford - full retrain.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return "labels.txt";
+    return context.getExternalFilesDir(null).getPath() + File.separator +  "kernels/dominikmobilenet/labels.txt";
   }
 
   @Override
@@ -99,5 +101,5 @@ public class ClassifierFloatMobileNetDominik extends Classifier {
   }
 
   @Override
-  public String getDataDetailPath() { return "skin-cancer-data-detail.json"; }
+  public String getDataDetailPath() { return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
 }
