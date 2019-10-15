@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nodomain.betchermartin.tensorflowlitescanner;
+package nodomain.betchermartin.tensorflowlitescanner.cameraclassifier;
 
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -39,36 +39,30 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import nodomain.betchermartin.tensorflowlitescanner.dataInput.PatientDataInputFragment;
+import nodomain.betchermartin.tensorflowlitescanner.R;
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.customview.TargetView;
 import nodomain.betchermartin.tensorflowlitescanner.env.BorderedText;
-import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
+import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.CsvFileWriter;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
+import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.MetaDataWriterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();

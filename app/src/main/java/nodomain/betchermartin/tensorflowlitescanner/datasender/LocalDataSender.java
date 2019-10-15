@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.datasender;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 
 public class LocalDataSender implements DataSenderInterface {
     private final Logger LOGGER = new Logger();

@@ -1,7 +1,6 @@
 package nodomain.betchermartin.tensorflowlitescanner;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -28,9 +27,11 @@ import java.util.zip.ZipInputStream;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import nodomain.betchermartin.tensorflowlitescanner.env.KernelUpdaterInterface;
+
+import nodomain.betchermartin.tensorflowlitescanner.dataInput.PatientDataInputActivity;
+import nodomain.betchermartin.tensorflowlitescanner.updater.KernelUpdaterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.env.MockKernelUpdater;
+import nodomain.betchermartin.tensorflowlitescanner.updater.MockKernelUpdater;
 
 public class LandingPageActivity extends AppCompatActivity {
 

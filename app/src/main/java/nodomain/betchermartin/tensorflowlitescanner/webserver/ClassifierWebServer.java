@@ -1,9 +1,9 @@
-package nodomain.betchermartin.tensorflowlitescanner.httpd;
+package nodomain.betchermartin.tensorflowlitescanner.webserver;
 
 import android.util.Size;
 
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 import java.io.IOException;
 import java.util.HashMap;

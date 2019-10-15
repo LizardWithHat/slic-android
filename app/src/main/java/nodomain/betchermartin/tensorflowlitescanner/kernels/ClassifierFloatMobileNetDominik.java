@@ -13,20 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package nodomain.betchermartin.tensorflowlitescanner.tflite;
+package nodomain.betchermartin.tensorflowlitescanner.kernels;
 
 import android.app.Activity;
-import android.os.Environment;
 import android.os.Parcelable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
-public class ClassifierFloatResNet50Dominik extends Classifier {
+public class ClassifierFloatMobileNetDominik extends Classifier {
 
   /** MobileNet requires additional normalization of the used input. */
   private static final float IMAGE_MEAN = 127.5f;
@@ -43,8 +41,8 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
    *
    * @param activity
    */
-  public ClassifierFloatResNet50Dominik(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
-          throws IOException {
+  public ClassifierFloatMobileNetDominik(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
+      throws IOException {
     super(activity, device, numThreads, metaDataInput);
     labelProbArray = new float[1][getNumLabels()];
   }
@@ -62,12 +60,12 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
 
   @Override
   protected String getModelPath() {
-    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikresnet50/skin-cancer-ResNet50.tflite";
+    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/mobilenetV2 - stanford - full retrain.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/labels.txt";
+    return context.getExternalFilesDir(null).getPath() + File.separator +  "kernels/dominikmobilenet/labels.txt";
   }
 
   @Override
@@ -100,17 +98,11 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
   @Override
   protected void runInference() {
     float[][] result = new float[1][1];
-    float[] testInputLocations = {0.7f,0f,1f,0f,1f,0f,0f,0f,1f};
-    // Object[] testInputMeta = {0.9f, 0, testInputLocations};
-    Object[] inputArray = {imgData, testInputLocations};
-    Map<Integer, Object> outputMap = new HashMap<>();
-    outputMap.put(0, result);
-    tflite.runForMultipleInputsOutputs(inputArray, outputMap);
+    tflite.run(imgData, result);
     setProbability(0, result[0][0]);
     setProbability(1, 1 - result[0][0]);
   }
 
   @Override
-  public String getDataDetailPath() {
-    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
+  public String getDataDetailPath() { return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
 }

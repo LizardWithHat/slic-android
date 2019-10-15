@@ -17,7 +17,7 @@ package nodomain.betchermartin.tensorflowlitescanner.customview;
 
 import java.util.List;
 
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 public interface ResultsView {
   public void setResults(final List<Classifier.Recognition> results);

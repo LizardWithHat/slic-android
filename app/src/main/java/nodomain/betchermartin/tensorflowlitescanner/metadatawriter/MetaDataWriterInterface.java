@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.metadatawriter;
 
 import android.os.Parcelable;
 

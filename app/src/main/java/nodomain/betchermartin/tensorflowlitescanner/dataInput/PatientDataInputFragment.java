@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner;
+package nodomain.betchermartin.tensorflowlitescanner.dataInput;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,31 +8,25 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,15 +36,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import androidx.fragment.app.Fragment;
+
+import nodomain.betchermartin.tensorflowlitescanner.R;
+import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.CameraActivity;
+import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.ClassifierActivity;
 import nodomain.betchermartin.tensorflowlitescanner.customview.InputView.InputViewFactory;
-import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
-import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
-import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
-import nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerActivity;
+import nodomain.betchermartin.tensorflowlitescanner.webserver.ClassifierWebServerActivity;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 public class PatientDataInputFragment extends Fragment {
 

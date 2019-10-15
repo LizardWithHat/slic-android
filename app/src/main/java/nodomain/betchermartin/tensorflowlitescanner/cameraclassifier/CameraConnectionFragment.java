@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nodomain.betchermartin.tensorflowlitescanner;
+package nodomain.betchermartin.tensorflowlitescanner.cameraclassifier;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import nodomain.betchermartin.tensorflowlitescanner.R;
 import nodomain.betchermartin.tensorflowlitescanner.customview.AutoFitTextureView;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 

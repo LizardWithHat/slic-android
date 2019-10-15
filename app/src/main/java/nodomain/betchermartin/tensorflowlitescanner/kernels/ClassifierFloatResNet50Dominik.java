@@ -13,18 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package nodomain.betchermartin.tensorflowlitescanner.tflite;
+package nodomain.betchermartin.tensorflowlitescanner.kernels;
 
 import android.app.Activity;
 import android.os.Parcelable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
-public class ClassifierFloatMobileNetKaggle extends Classifier {
+public class ClassifierFloatResNet50Dominik extends Classifier {
 
   /** MobileNet requires additional normalization of the used input. */
   private static final float IMAGE_MEAN = 127.5f;
@@ -41,30 +42,31 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
    *
    * @param activity
    */
-  public ClassifierFloatMobileNetKaggle(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
-      throws IOException {
+  public ClassifierFloatResNet50Dominik(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
+          throws IOException {
     super(activity, device, numThreads, metaDataInput);
     labelProbArray = new float[1][getNumLabels()];
   }
 
+  // Als Eingabe wird ein Bild im Format 224x224 Pixeln erwartet, bei dem die Pixel-Farbwerte zwischen 0 und 1 liegen. Jedes Pixel wird als 3 float64 (Double Precision) abgebildet.
   @Override
   public int getImageSizeX() {
-    return 100;
+    return 224;
   }
 
   @Override
   public int getImageSizeY() {
-    return 75;
+    return 224;
   }
 
   @Override
   protected String getModelPath() {
-    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/kagglemobilenet/kaggle_kernel.tflite";
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikresnet50/skin-cancer-ResNet50.tflite";
   }
 
   @Override
   protected String getLabelPath() {
-    return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/kagglemobilenet/labels_kaggle_kernel.txt";
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/labels.txt";
   }
 
   @Override
@@ -73,7 +75,7 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
   }
 
   @Override
-  protected void addPixelValue(int pixelValue, float[] extremeValues) {
+  protected void addPixelValue(int pixelValue, float extremeValues[]) {
     imgData.putFloat((((pixelValue >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
     imgData.putFloat((((pixelValue >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
     imgData.putFloat(((pixelValue & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
@@ -96,9 +98,18 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
 
   @Override
   protected void runInference() {
-    tflite.run(imgData, labelProbArray);
+    float[][] result = new float[1][1];
+    float[] testInputLocations = {0.7f,0f,1f,0f,1f,0f,0f,0f,1f};
+    // Object[] testInputMeta = {0.9f, 0, testInputLocations};
+    Object[] inputArray = {imgData, testInputLocations};
+    Map<Integer, Object> outputMap = new HashMap<>();
+    outputMap.put(0, result);
+    tflite.runForMultipleInputsOutputs(inputArray, outputMap);
+    setProbability(0, result[0][0]);
+    setProbability(1, 1 - result[0][0]);
   }
 
   @Override
-  public String getDataDetailPath() { return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
+  public String getDataDetailPath() {
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
 }

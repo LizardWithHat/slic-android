@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package nodomain.betchermartin.tensorflowlitescanner.tflite;
+package nodomain.betchermartin.tensorflowlitescanner.kernels;
 
 import android.app.Activity;
 import android.graphics.Bitmap;

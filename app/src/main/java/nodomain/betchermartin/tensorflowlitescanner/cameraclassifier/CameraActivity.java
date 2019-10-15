@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nodomain.betchermartin.tensorflowlitescanner;
+package nodomain.betchermartin.tensorflowlitescanner.cameraclassifier;
 
 import android.Manifest;
 import android.app.Fragment;
@@ -58,6 +58,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
+import nodomain.betchermartin.tensorflowlitescanner.R;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;
@@ -65,7 +66,7 @@ import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivi
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 public abstract class CameraActivity extends AppCompatActivity
     implements OnImageAvailableListener,

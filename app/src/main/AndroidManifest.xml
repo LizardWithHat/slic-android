@@ -24,8 +24,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".PatientDataInputActivity" />
-        <activity android:name=".httpd.ClassifierWebServerActivity" />
+        <activity android:name=".dataInput.PatientDataInputActivity" />
+        <activity android:name=".webserver.ClassifierWebServerActivity" />
         <activity
             android:name=".LandingPageActivity"
             android:screenOrientation="portrait">
@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ClassifierActivity"
+            android:name=".cameraclassifier.ClassifierActivity"
             android:label="@string/activity_name"
             android:screenOrientation="portrait" />
         <activity

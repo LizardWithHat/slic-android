@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.updater;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -6,7 +6,7 @@ import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import nodomain.betchermartin.tensorflowlitescanner.R;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 public class MockKernelUpdater implements KernelUpdaterInterface {
 

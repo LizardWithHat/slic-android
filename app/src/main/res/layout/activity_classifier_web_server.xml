@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nodomain.betchermartin.tensorflowlitescanner.httpd.ClassifierWebServerActivity"
+    tools:context="nodomain.betchermartin.tensorflowlitescanner.webserver.ClassifierWebServerActivity"
     android:keepScreenOn="true">
 
     <TextView

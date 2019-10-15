@@ -1,8 +1,6 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.updater;
 
-import android.content.Context;
-
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 public interface KernelUpdaterInterface {
     void searchAllUpdates();

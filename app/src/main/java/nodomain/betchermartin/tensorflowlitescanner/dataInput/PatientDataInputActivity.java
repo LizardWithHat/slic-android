@@ -1,8 +1,6 @@
-package nodomain.betchermartin.tensorflowlitescanner;
+package nodomain.betchermartin.tensorflowlitescanner.dataInput;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -11,22 +9,18 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.stream.Stream;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import nodomain.betchermartin.tensorflowlitescanner.env.DataSenderInterface;
-import nodomain.betchermartin.tensorflowlitescanner.env.LocalDataSender;
+
+import nodomain.betchermartin.tensorflowlitescanner.R;
+import nodomain.betchermartin.tensorflowlitescanner.datasender.DataSenderInterface;
+import nodomain.betchermartin.tensorflowlitescanner.datasender.LocalDataSender;
 import nodomain.betchermartin.tensorflowlitescanner.preferences.PreferenceActivity;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 import static android.os.Environment.MEDIA_MOUNTED;
 import static android.os.Environment.getExternalStorageState;

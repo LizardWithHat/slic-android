@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.metadatawriter;
 
 import android.os.Parcelable;
 
@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+
+import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 
 public class CsvFileWriter implements MetaDataWriterInterface {
     private static CsvFileWriter instance;

@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.httpd;
+package nodomain.betchermartin.tensorflowlitescanner.webserver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,13 +11,11 @@ import android.graphics.Matrix;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.view.View;
@@ -29,33 +27,25 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import nodomain.betchermartin.tensorflowlitescanner.PatientDataInputFragment;
+import nodomain.betchermartin.tensorflowlitescanner.dataInput.PatientDataInputFragment;
 import nodomain.betchermartin.tensorflowlitescanner.R;
-import nodomain.betchermartin.tensorflowlitescanner.env.CsvFileWriter;
+import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.CsvFileWriter;
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.env.MetaDataWriterInterface;
+import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.MetaDataWriterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
-import nodomain.betchermartin.tensorflowlitescanner.tflite.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class ClassifierWebServerActivity extends AppCompatActivity implements ClassifierWebServerCallback{
 

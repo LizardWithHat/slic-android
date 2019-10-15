@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.env;
+package nodomain.betchermartin.tensorflowlitescanner.datasender;
 
 import java.io.File;
 
