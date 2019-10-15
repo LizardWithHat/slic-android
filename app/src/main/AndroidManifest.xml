@@ -25,7 +25,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".dataInput.PatientDataInputActivity" />
-        <activity android:name=".webserver.ClassifierWebServerActivity" />
+        <activity android:name=".webserverclassifier.ClassifierWebServerActivity" />
         <activity
             android:name=".LandingPageActivity"
             android:screenOrientation="portrait">

@@ -1,4 +1,4 @@
-package nodomain.betchermartin.tensorflowlitescanner.webserver;
+package nodomain.betchermartin.tensorflowlitescanner.webserverclassifier;
 
 import java.util.List;
 

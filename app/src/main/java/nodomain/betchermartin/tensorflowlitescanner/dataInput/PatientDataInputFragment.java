@@ -42,7 +42,7 @@ import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.CameraActiv
 import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.ClassifierActivity;
 import nodomain.betchermartin.tensorflowlitescanner.customview.InputView.InputViewFactory;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.webserver.ClassifierWebServerActivity;
+import nodomain.betchermartin.tensorflowlitescanner.webserverclassifier.ClassifierWebServerActivity;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
