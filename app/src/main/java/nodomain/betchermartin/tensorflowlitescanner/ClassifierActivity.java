@@ -300,7 +300,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     try {
       LOGGER.d(
           "Creating classifier (model=%s, device=%s, numThreads=%d)", model, device, numThreads);
-      classifier = Classifier.create(this, model, device, numThreads);
+      classifier = Classifier.create(this, model, device, numThreads, currentPatientData);
     } catch (IOException e) {
       LOGGER.e(e, "Failed to create classifier.");
     }

@@ -16,9 +16,12 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.tflite;
 
 import android.app.Activity;
+import android.os.Parcelable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /** This TensorFlowLite classifier works with the float MobileNet model. */
 public class ClassifierFloatMobileNetKaggle extends Classifier {
@@ -38,9 +41,9 @@ public class ClassifierFloatMobileNetKaggle extends Classifier {
    *
    * @param activity
    */
-  public ClassifierFloatMobileNetKaggle(Activity activity, Device device, int numThreads)
+  public ClassifierFloatMobileNetKaggle(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
       throws IOException {
-    super(activity, device, numThreads);
+    super(activity, device, numThreads, metaDataInput);
     labelProbArray = new float[1][getNumLabels()];
   }
 

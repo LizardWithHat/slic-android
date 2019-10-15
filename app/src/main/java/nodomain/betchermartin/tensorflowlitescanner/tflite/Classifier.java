@@ -16,26 +16,25 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.tflite;
 
 import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.Trace;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import org.tensorflow.lite.Interpreter;
+
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import org.tensorflow.lite.gpu.GpuDelegate;
 
@@ -43,6 +42,7 @@ import org.tensorflow.lite.gpu.GpuDelegate;
 public abstract class Classifier {
   private static final Logger LOGGER = new Logger();
   protected final Activity context;
+  protected Map<String, List<Parcelable>> metaData;
 
   /** The model type used for classification. */
   public enum Model {
@@ -94,17 +94,18 @@ public abstract class Classifier {
    * @param model The model to use for classification.
    * @param device The device to use for classification.
    * @param numThreads The number of threads to use for classification.
+   * @param metaDataInput A Map of extra input objects.
    * @return A classifier with the desired configuration.
    */
-  public static Classifier create(Activity activity, Model model, Device device, int numThreads)
+  public static Classifier create(Activity activity, Model model, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
           throws IOException {
     switch(model){
       case DOMINIKMOBILENET:
-        return new ClassifierFloatMobileNetDominik(activity, device, numThreads);
+        return new ClassifierFloatMobileNetDominik(activity, device, numThreads, metaDataInput);
       case KAGGLEMOBILENET:
-        return new ClassifierFloatMobileNetKaggle(activity, device, numThreads);
+        return new ClassifierFloatMobileNetKaggle(activity, device, numThreads, metaDataInput);
       case DOMINIKRESNET50:
-        return new ClassifierFloatResNet50Dominik(activity, device, numThreads);
+        return new ClassifierFloatResNet50Dominik(activity, device, numThreads, metaDataInput);
       default:
         throw new IOException("Invalid Classifier Class");
     }
@@ -181,7 +182,7 @@ public abstract class Classifier {
   }
 
   /** Initializes a {@code Classifier}. */
-  protected Classifier(Activity activity, Device device, int numThreads) throws IOException {
+  protected Classifier(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput) throws IOException {
     context = activity;
     tfliteModel = loadModelFile();
     switch (device) {
@@ -206,6 +207,8 @@ public abstract class Classifier {
                 * DIM_PIXEL_SIZE
                 * getNumBytesPerChannel());
     imgData.order(ByteOrder.nativeOrder());
+
+    this.metaData = metaDataInput;
     LOGGER.d("Created a Tensorflow Lite Image Classifier.");
   }
 

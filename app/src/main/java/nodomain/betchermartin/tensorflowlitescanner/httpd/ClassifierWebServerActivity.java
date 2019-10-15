@@ -209,7 +209,7 @@ public class ClassifierWebServerActivity extends AppCompatActivity implements Cl
     private Classifier createClassifier(Classifier.Model model, Classifier.Device device, int numThreads) {
         Classifier classifier = null;
         try {
-            classifier = Classifier.create(this, model, device, numThreads);
+            classifier = Classifier.create(this, model, device, numThreads, currentPatientData);
         } catch (IOException e) {
             LOGGER.e(e, "Failed to create classifier.");
         }

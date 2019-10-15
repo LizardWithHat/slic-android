@@ -1,12 +1,17 @@
 package nodomain.betchermartin.tensorflowlitescanner;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,10 +28,11 @@ import java.util.zip.ZipInputStream;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import nodomain.betchermartin.tensorflowlitescanner.env.KernelUpdaterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
+import nodomain.betchermartin.tensorflowlitescanner.env.MockKernelUpdater;
 
 public class LandingPageActivity extends AppCompatActivity {
-    //TODO make Async Task for copying and properly show animation
 
     private static final Logger LOGGER = new Logger();
 
@@ -39,6 +45,7 @@ public class LandingPageActivity extends AppCompatActivity {
     private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
     private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
     private static final int PERMISSIONS_REQUEST = 1;
+    private KernelUpdaterInterface updater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +55,7 @@ public class LandingPageActivity extends AppCompatActivity {
         if (!hasPermission()) {
             requestPermission();
         }
-
+        updater = new MockKernelUpdater(this);
         createNotificationChannel();
     }
 
@@ -58,58 +65,72 @@ public class LandingPageActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if(!sharedPreferences.getBoolean(getString(R.string.initialSetup), false)){
-            if(copyAssetsToExternalDir() == true) {
-                sharedPreferences.edit().putBoolean(getString(R.string.initialSetup), true).commit();
+            AsyncTask<Void, Void, Boolean> assetCopier = new AssetCopier();
+            assetCopier.execute();
+        } else {
+            exitLandingPage();
+        }
+    }
+
+    private final class AssetCopier extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            // invoke initial Setup, copying Kernel Assets to External Dirs
+            File kernelDir = new File(getExternalFilesDir(null), "kernels");
+            AssetManager assetManager = getResources().getAssets();
+            ZipEntry zipEntry;
+            byte[] buffer = new byte[1024];
+            int length;
+            try {
+                ZipInputStream inputStream = new ZipInputStream(assetManager.open("kernels.zip"));
+                while((zipEntry = inputStream.getNextEntry()) != null){
+                    if(zipEntry.isDirectory()) {
+                        new File(kernelDir, zipEntry.getName()).mkdirs();
+                        continue;
+                    }
+                    FileOutputStream fileOutputStream = null;
+                    fileOutputStream = new FileOutputStream(kernelDir + File.separator + zipEntry.getName());
+                    while ((length = inputStream.read(buffer)) > 0) {
+                        fileOutputStream.write(buffer, 0, length);
+                    }
+
+                }
+            }catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if(result){
+                PreferenceManager.getDefaultSharedPreferences(LandingPageActivity.this).edit()
+                        .putBoolean(getString(R.string.initialSetup), true).commit();
+                exitLandingPage();
             } else {
-                Toast.makeText(this, "Copying Assets failed, abort.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LandingPageActivity.this, "Copying Assets failed, abort.", Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
-
-        if(sharedPreferences.getBoolean(getString(R.string.allow_updates_preference_key), false)){
-            startBackgroundUpdate();
-        }
-
-        Intent patientInputIntent = new Intent(this, PatientDataInputActivity.class);
-        patientInputIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(patientInputIntent);
-        finish();
-    }
-
-    private boolean copyAssetsToExternalDir() {
-        // invoke initial Setup, copying Kernel Assets to External Dirs
-        File kernelDir = new File(getExternalFilesDir(null), "kernels");
-        AssetManager assetManager = getResources().getAssets();
-        ZipEntry zipEntry;
-        byte[] buffer = new byte[1024];
-        int length;
-        try {
-            ZipInputStream inputStream = new ZipInputStream(assetManager.open("kernels.zip"));
-            while((zipEntry = inputStream.getNextEntry()) != null){
-                if(zipEntry.isDirectory()) {
-                    new File(kernelDir, zipEntry.getName()).mkdirs();
-                    continue;
-                }
-                FileOutputStream fileOutputStream = null;
-                fileOutputStream = new FileOutputStream(kernelDir + File.separator + zipEntry.getName());
-                while ((length = inputStream.read(buffer)) > 0) {
-                    fileOutputStream.write(buffer, 0, length);
-                }
-
-            }
-        }catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-            }
-            return true;
-
     }
 
     private void startBackgroundUpdate() {
-        // TODO invoke update Service
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network[] networks = connectivityManager.getAllNetworks();
+        for(Network network : networks){
+            // Automatic update only on Wifi/Ethernet connection, otherwise only search for updates
+            if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                updater.updateAllKernels();
+            } else {
+                updater.searchAllUpdates();
+            }
+        }
     }
 
     private void createNotificationChannel() {
@@ -157,5 +178,13 @@ public class LandingPageActivity extends AppCompatActivity {
                     .show();
         }
         ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE, PERMISSION_WIFI}, PERMISSIONS_REQUEST);
+    }
+
+    private void exitLandingPage(){
+        startBackgroundUpdate();
+        Intent patientInputIntent = new Intent(this, PatientDataInputActivity.class);
+        patientInputIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(patientInputIntent);
+        finish();
     }
 }

@@ -80,19 +80,22 @@ public class PatientDataInputFragment extends Fragment {
             sharedPreferences.edit().putString("UNIQUE_INSTALL", UUID.randomUUID().toString()).apply();
         }
 
-        // create Dummy Interpreter to get DataDetailPath
-        Classifier model = null;
-        try {
-            model = Classifier.create(getActivity(), chosenModel, Classifier.Device.CPU, 1);
-        } catch (IOException e) {
-            LOGGER.e("Error craeting dummy interpreter: " + e.getMessage());
-        }
-        createHeaderFromJson(model.getDataDetailPath());
-        model.close();
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstance){
+        // create Dummy Interpreter to get DataDetailPath
+        Classifier model = null;
+        try {
+            model = Classifier.create(getActivity(), chosenModel, Classifier.Device.CPU, 1, patientData);
+        } catch (IOException e) {
+            LOGGER.e("Error craeting dummy interpreter: " + e.getMessage());
+        }
+        model.close();
+        patientData.clear();
+        inputItemExtras.clear();
+        createHeaderFromJson(model.getDataDetailPath());
         return inflater.inflate(R.layout.fragment_patient_data_input, container, false);
     }
 
@@ -141,13 +144,6 @@ public class PatientDataInputFragment extends Fragment {
                 startWebServer.setEnabled(true);
             }
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        patientData.clear();
-        inputItemExtras.clear();
     }
 
     private void createHeaderFromJson(String filename) {

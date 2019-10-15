@@ -32,9 +32,10 @@ public class MockKernelUpdater implements KernelUpdaterInterface {
         NotificationManagerCompat notifManager = NotificationManagerCompat.from(context);
         int notifId = (int) (Math.random() * 100.0);
         NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(context, context.getString(R.string.channel_id))
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentText("Dies ist ein Mock-Update!")
                 .setContentTitle("Seelab-Scanner - Mock Update")
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         notifManager.notify(notifId, notifBuilder.build());
     }
