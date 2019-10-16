@@ -21,13 +21,20 @@ import android.os.Parcelable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-/** This TensorFlowLite classifier works with the float MobileNet model. */
+import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
+import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
+
+/** This TensorFlowLite classifier works with the float ResNet50 model. */
 public class ClassifierFloatResNet50Dominik extends Classifier {
 
-  /** MobileNet requires additional normalization of the used input. */
+  private float[] metaDataArray;
+
+  /** Classifier requires additional normalization of the used input. */
   private static final float IMAGE_MEAN = 127.5f;
   private static final float IMAGE_STD = 127.5f;
 
@@ -99,9 +106,8 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
   @Override
   protected void runInference() {
     float[][] result = new float[1][1];
-    float[] testInputLocations = {0.7f,0f,1f,0f,1f,0f,0f,0f,1f};
-    // Object[] testInputMeta = {0.9f, 0, testInputLocations};
-    Object[] inputArray = {imgData, testInputLocations};
+    processInput();
+    Object[] inputArray = {imgData, metaDataArray};
     Map<Integer, Object> outputMap = new HashMap<>();
     outputMap.put(0, result);
     tflite.runForMultipleInputsOutputs(inputArray, outputMap);
@@ -112,4 +118,67 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
   @Override
   public String getDataDetailPath() {
     return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
+
+  @Override
+  protected void processInput() {
+    /*
+     * - Metadaten:
+     * - Alter (dividiert durch 100)
+     * - Geschlecht (0=female, 1=male)
+     * - Körperstelle (jeweils eine Stelle 0 oder 1 ['anterior torso', 'lower extremity', 'posterior torso', 'head/neck', 'upper extremity', 'lateral torso', 'palms/soles'])
+     */
+
+    metaDataArray = new float[9];
+    Set metaDataKeySet = metaData.keySet();
+    Iterator metaDataKeySetIterator = metaDataKeySet.iterator();
+    while(metaDataKeySetIterator.hasNext()){
+      String key = (String) metaDataKeySetIterator.next();
+      switch(key){
+        case "age":
+          metaDataArray[0] = ((IntegerParcelable) metaData.get(key)).getValue() / 100.0f;
+          break;
+        case "sex":
+          metaDataArray[1] = ((StringParcelable) metaData.get(key)).getValue().equals("female") ? 0.0f : 1.0f;
+          break;
+        case "localization":
+          String value = ((StringParcelable) metaData.get(key)).getValue();
+
+          // initially fill with 0f, more efficient with copy paste instead of loops
+          metaDataArray[2] = 0.0f;
+          metaDataArray[3] = 0.0f;
+          metaDataArray[4] = 0.0f;
+          metaDataArray[5] = 0.0f;
+          metaDataArray[6] = 0.0f;
+          metaDataArray[7] = 0.0f;
+          metaDataArray[8] = 0.0f;
+
+          switch(value){
+            case "anterior torso":
+              metaDataArray[2] = 1.0f;
+              break;
+            case "lower extremity":
+              metaDataArray[3] = 1.0f;
+              break;
+            case "posterior torso":
+              metaDataArray[4] = 1.0f;
+              break;
+            case "head":
+            case "neck":
+              metaDataArray[5] = 1.0f;
+              break;
+            case "upper extremity":
+              metaDataArray[6] = 1.0f;
+              break;
+            case "lateral torso":
+              metaDataArray[7] = 1.0f;
+              break;
+            case "palms":
+            case "soles":
+              metaDataArray[8] = 1.0f;
+              break;
+          }
+          break;
+      }
+    }
+  }
 }

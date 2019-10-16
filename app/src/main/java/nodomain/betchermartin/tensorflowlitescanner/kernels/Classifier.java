@@ -341,14 +341,14 @@ public abstract class Classifier {
   public abstract int getImageSizeY();
 
   /**
-   * Get the name of the model file stored in Assets.
+   * Get the path of the model file stored in ExternalFileDir.
    *
    * @return
    */
   protected abstract String getModelPath();
 
   /**
-   * Get the name of the label file stored in Assets.
+   * Get the path of the label file stored in ExternalFileDir.
    *
    * @return
    */
@@ -411,5 +411,17 @@ public abstract class Classifier {
     return labels.size();
   }
 
+
+  /**
+   * Get the path of the input details file stored in ExternalFileDir.
+   *
+   * @return
+   */
   public abstract String getDataDetailPath();
+
+  /**
+   * Processes the extra input in metaData and prepare them for inferences
+   *
+   */
+  protected abstract void processInput();
 }

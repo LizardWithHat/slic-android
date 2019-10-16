@@ -105,4 +105,9 @@ public class ClassifierFloatMobileNetDominik extends Classifier {
 
   @Override
   public String getDataDetailPath() { return context.getExternalFilesDir(null).getPath()+ File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
+
+  @Override
+  protected void processInput() {
+    // stub, no extra input needed
+  }
 }
