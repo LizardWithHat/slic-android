@@ -42,7 +42,6 @@ import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.CameraActiv
 import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.ClassifierActivity;
 import nodomain.betchermartin.tensorflowlitescanner.customview.InputView.InputViewFactory;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.webserverclassifier.ClassifierWebServerActivity;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
@@ -116,28 +115,6 @@ public class PatientDataInputFragment extends Fragment {
                 startActivity(classifierIntent);
             }
         });
-
-        Button startWebServer = getActivity().findViewById(R.id.butStartWebServer);
-        startWebServer.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                // Eingaben versenden
-                Intent classifierIntent = new Intent(parent, ClassifierWebServerActivity.class);
-                classifierIntent.putExtra(RESULT_STRING, patientData);
-                classifierIntent.putExtra(ClassifierWebServerActivity.CHOSENMODEL, chosenModel.toString());
-                startActivity(classifierIntent);
-            }
-        });
-
-        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network[] networks = connectivityManager.getAllNetworks();
-        for(Network network : networks){
-            // Button nur aktivieren wenn aktive WIFI oder Ethernet verbindung
-            if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                startWebServer.setEnabled(true);
-            }
-        }
     }
 
     private void createHeaderFromJson(String filename) {

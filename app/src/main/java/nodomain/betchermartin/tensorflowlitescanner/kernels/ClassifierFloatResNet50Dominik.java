@@ -129,19 +129,16 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
      */
 
     metaDataArray = new float[9];
-    Set metaDataKeySet = metaData.keySet();
-    Iterator metaDataKeySetIterator = metaDataKeySet.iterator();
-    while(metaDataKeySetIterator.hasNext()){
-      String key = (String) metaDataKeySetIterator.next();
-      switch(key){
+    for (String key : metaData.keySet()) {
+      switch (key) {
         case "age":
-          metaDataArray[0] = ((IntegerParcelable) metaData.get(key)).getValue() / 100.0f;
+          metaDataArray[0] = ((IntegerParcelable) metaData.get(key).get(0)).getValue() / 100.0f;
           break;
         case "sex":
-          metaDataArray[1] = ((StringParcelable) metaData.get(key)).getValue().equals("female") ? 0.0f : 1.0f;
+          metaDataArray[1] = ((StringParcelable) metaData.get(key).get(0)).getValue().equals("female") ? 0.0f : 1.0f;
           break;
         case "localization":
-          String value = ((StringParcelable) metaData.get(key)).getValue();
+          String value = ((StringParcelable) metaData.get(key).get(0)).getValue();
 
           // initially fill with 0f, more efficient with copy paste instead of loops
           metaDataArray[2] = 0.0f;
@@ -152,7 +149,7 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
           metaDataArray[7] = 0.0f;
           metaDataArray[8] = 0.0f;
 
-          switch(value){
+          switch (value) {
             case "anterior torso":
               metaDataArray[2] = 1.0f;
               break;

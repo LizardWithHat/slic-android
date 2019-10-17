@@ -51,4 +51,7 @@ dependencies {
             [group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'],
     )
     implementation 'com.google.zxing:core:3.3.0'
+
+    implementation "androidx.work:work-runtime:2.2.0"
+
 }
