@@ -5,5 +5,5 @@ import android.os.Parcelable;
 import java.util.List;
 
 public interface InputProcessStrategy {
-    float processInput(Parcelable inputParameter);
+    float processInput(List<Parcelable> inputParameter, String ... args);
 }

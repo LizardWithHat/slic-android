@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.InputProcessStrategy;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleAgeProcessStrategy;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleSexProcessStrategy;
+import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleStringComparisonStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 
@@ -132,48 +136,21 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
     for (String key : metaData.keySet()) {
       switch (key) {
         case "age":
-          metaDataArray[0] = ((IntegerParcelable) metaData.get(key).get(0)).getValue() / 100.0f;
+          metaDataArray[0] = new SimpleAgeProcessStrategy().processInput(metaData.get(key));
           break;
         case "sex":
-          metaDataArray[1] = ((StringParcelable) metaData.get(key).get(0)).getValue().equals("female") ? 0.0f : 1.0f;
+          metaDataArray[1] = new SimpleSexProcessStrategy().processInput(metaData.get(key));
           break;
         case "localization":
-          String value = ((StringParcelable) metaData.get(key).get(0)).getValue();
-
-          // initially fill with 0f, more efficient with copy paste instead of loops
-          metaDataArray[2] = 0.0f;
-          metaDataArray[3] = 0.0f;
-          metaDataArray[4] = 0.0f;
-          metaDataArray[5] = 0.0f;
-          metaDataArray[6] = 0.0f;
-          metaDataArray[7] = 0.0f;
-          metaDataArray[8] = 0.0f;
-
-          switch (value) {
-            case "anterior torso":
-              metaDataArray[2] = 1.0f;
-              break;
-            case "lower extremity":
-              metaDataArray[3] = 1.0f;
-              break;
-            case "posterior torso":
-              metaDataArray[4] = 1.0f;
-              break;
-            case "head":
-            case "neck":
-              metaDataArray[5] = 1.0f;
-              break;
-            case "upper extremity":
-              metaDataArray[6] = 1.0f;
-              break;
-            case "lateral torso":
-              metaDataArray[7] = 1.0f;
-              break;
-            case "palms":
-            case "soles":
-              metaDataArray[8] = 1.0f;
-              break;
-          }
+          List<Parcelable> inputList = metaData.get(key);
+          InputProcessStrategy strat = new SimpleStringComparisonStrategy();
+          metaDataArray[2] = strat.processInput(inputList, "anterior torso");
+          metaDataArray[3] = strat.processInput(inputList, "lower extremity");
+          metaDataArray[4] = strat.processInput(inputList, "posterior torso");
+          metaDataArray[5] = strat.processInput(inputList, "head", "neck");
+          metaDataArray[6] = strat.processInput(inputList, "upper extremity");
+          metaDataArray[7] = strat.processInput(inputList, "lateral torso");
+          metaDataArray[8] = strat.processInput(inputList, "palms", "soles");
           break;
       }
     }

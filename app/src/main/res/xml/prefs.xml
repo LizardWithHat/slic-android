@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         android:title="@string/common_settings_title">
@@ -24,6 +25,53 @@
             android:key="@string/collect_data_preference_key"
             android:title="@string/collect_data_preference_text"
             android:defaultValue="true"/>/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="@string/updater_preferences_category_title">
+
+        <SwitchPreference
+            android:key="@string/app_updater_switch_preference_key"
+            android:title="@string/app_updater_switch_preference_title"
+            android:defaultValue="true" />
+
+        <EditTextPreference
+            android:key="@string/app_updater_interval_preference_key"
+            android:title="@string/app_updater_interval_preference_title"
+            android:defaultValue="14"
+            android:dependency="@string/app_updater_switch_preference_key"/>
+
+        <EditTextPreference
+            android:key="@string/app_updater_server_preference_key"
+            android:title="@string/app_updater_server_preference_title"
+            android:defaultValue="0.0.0.0"
+            android:dependency="@string/app_updater_switch_preference_key"/>
+
+
+        <SwitchPreference
+            android:key="@string/kernel_updater_switch_preference_key"
+            android:title="@string/kernel_updater_switch_preference_title"
+            android:defaultValue="true" />
+
+        <SwitchPreference
+            android:key="@string/kernel_updater_switch_install_preference_key"
+            android:title="@string/kernel_updater_switch_install_preference_title"
+            android:defaultValue="true"
+            android:dependency="@string/kernel_updater_switch_preference_key"/>
+
+        <EditTextPreference
+            android:key="@string/kernel_updater_interval_preference_key"
+            android:title="@string/kernel_updater_interval_preference_title"
+            android:defaultValue="14"
+            android:dependency="@string/kernel_updater_switch_preference_key"/>
+
+        <EditTextPreference
+            android:key="@string/kernel_updater_server_preference_key"
+            android:title="@string/kernel_updater_server_preference_title"
+            android:defaultValue="0.0.0.0"
+            android:dependency="@string/kernel_updater_switch_preference_key"/>
+
 
     </PreferenceCategory>
 
