@@ -34,6 +34,9 @@ public class IntervalInputView extends InputView {
     public View createInputView() {
         LinearLayout view = new LinearLayout(context);
         EditText textField = new EditText(context);
+        textField.setSingleLine();
+        textField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
         view.addView(textField);
 
         // Feld nicht Editierbar, aber anklickbar für onClick-Methode stellen
