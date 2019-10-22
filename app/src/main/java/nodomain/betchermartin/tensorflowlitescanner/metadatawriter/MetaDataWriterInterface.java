@@ -1,11 +1,9 @@
 package nodomain.betchermartin.tensorflowlitescanner.metadatawriter;
 
-import android.os.Parcelable;
-
-import java.util.HashMap;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface MetaDataWriterInterface {
-    boolean writeMetaData(LinkedHashMap<String, List<Parcelable>> listOfObjects);
+    boolean writeMetaData(LinkedHashMap<String, List<Serializable>> listOfObjects);
 }

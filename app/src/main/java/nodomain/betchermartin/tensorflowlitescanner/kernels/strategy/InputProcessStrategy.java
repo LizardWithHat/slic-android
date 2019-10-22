@@ -1,9 +1,8 @@
 package nodomain.betchermartin.tensorflowlitescanner.kernels.strategy;
 
-import android.os.Parcelable;
-
+import java.io.Serializable;
 import java.util.List;
 
 public interface InputProcessStrategy {
-    float processInput(List<Parcelable> inputParameter, String ... args);
+    float processInput(List<Serializable> inputParameter, String ... args);
 }

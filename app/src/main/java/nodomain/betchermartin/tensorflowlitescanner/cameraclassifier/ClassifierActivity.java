@@ -28,7 +28,6 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.media.MediaActionSound;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Size;
@@ -54,13 +53,14 @@ import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.CsvFileWriter
 import nodomain.betchermartin.tensorflowlitescanner.env.ImageUtils;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.metadatawriter.MetaDataWriterInterface;
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
+import nodomain.betchermartin.tensorflowlitescanner.misc.LinkedHashMapWrapper;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -91,14 +91,15 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
   private float scaleFactor = 1.0f;
   private ScaleGestureDetector scaleGestureDetector;
   private MetaDataWriterInterface metaDataWriter;
-  private LinkedHashMap<String, List<Parcelable>> currentPatientData;
+  private LinkedHashMap<String, List<Serializable>> currentPatientData;
 
   @Override
   public void onCreate(Bundle savedInstance){
       super.onCreate(savedInstance);
 
       sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-      currentPatientData = getIntent().getParcelableExtra(PatientDataInputFragment.RESULT_STRING);
+      currentPatientData = (LinkedHashMap<String, List<Serializable>>)
+              ((LinkedHashMapWrapper) getIntent().getSerializableExtra(PatientDataInputFragment.RESULT_STRING)).get();
 
       metaDataWriter = CsvFileWriter.getInstance(new File(getExternalFilesDir(null), "out"));
 
@@ -336,7 +337,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                       LOGGER.e("Error saving Image: " + e.getMessage());
                   }
                   currentPatientData.get("picture_id").clear();
-                  currentPatientData.get("picture_id").add(new StringParcelable(destinationFile.getName()));
+                  currentPatientData.get("picture_id").add(destinationFile.getName());
                   metaDataWriter.writeMetaData(currentPatientData);
               }
           };

@@ -16,10 +16,10 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.kernels;
 
 import android.app.Activity;
-import android.os.Parcelable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +41,7 @@ public class ClassifierFloatMobileNetDominik extends Classifier {
    *
    * @param activity
    */
-  public ClassifierFloatMobileNetDominik(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
+  public ClassifierFloatMobileNetDominik(Activity activity, Device device, int numThreads, Map<String, List<Serializable>> metaDataInput)
       throws IOException {
     super(activity, device, numThreads, metaDataInput);
     labelProbArray = new float[1][getNumLabels()];

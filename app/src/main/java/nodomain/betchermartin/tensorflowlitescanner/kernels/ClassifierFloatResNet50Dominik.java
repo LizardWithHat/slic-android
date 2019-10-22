@@ -16,22 +16,18 @@ limitations under the License.
 package nodomain.betchermartin.tensorflowlitescanner.kernels;
 
 import android.app.Activity;
-import android.os.Parcelable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.InputProcessStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleAgeProcessStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleSexProcessStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleStringComparisonStrategy;
-import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 
 /** This TensorFlowLite classifier works with the float ResNet50 model. */
 public class ClassifierFloatResNet50Dominik extends Classifier {
@@ -53,7 +49,7 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
    *
    * @param activity
    */
-  public ClassifierFloatResNet50Dominik(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
+  public ClassifierFloatResNet50Dominik(Activity activity, Device device, int numThreads, Map<String, List<Serializable>> metaDataInput)
           throws IOException {
     super(activity, device, numThreads, metaDataInput);
     labelProbArray = new float[1][getNumLabels()];
@@ -77,7 +73,7 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
 
   @Override
   protected String getLabelPath() {
-    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/labels.txt";
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikresnet50/labels.txt";
   }
 
   @Override
@@ -121,7 +117,7 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
 
   @Override
   public String getDataDetailPath() {
-    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikmobilenet/skin-cancer-data-detail.json"; }
+    return context.getExternalFilesDir(null).getPath() + File.separator + "kernels/dominikresnet50/skin-cancer-data-detail.json"; }
 
   @Override
   protected void processInput() {
@@ -142,7 +138,7 @@ public class ClassifierFloatResNet50Dominik extends Classifier {
           metaDataArray[1] = new SimpleSexProcessStrategy().processInput(metaData.get(key));
           break;
         case "localization":
-          List<Parcelable> inputList = metaData.get(key);
+          List<Serializable> inputList = metaData.get(key);
           InputProcessStrategy strat = new SimpleStringComparisonStrategy();
           metaDataArray[2] = strat.processInput(inputList, "anterior torso");
           metaDataArray[3] = strat.processInput(inputList, "lower extremity");

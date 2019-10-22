@@ -1,17 +1,15 @@
 package nodomain.betchermartin.tensorflowlitescanner.customview.InputView;
 
 import android.content.Context;
-import android.os.Parcelable;
 import android.view.View;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import androidx.annotation.Nullable;
-
 public class InputViewFactory {
 
-    public static View createInputView(Context context, String type, List<Parcelable> inputList, Map<String, Object> extras){
+    public static View createInputView(Context context, String type, List<Serializable> inputList, Map<String, Object> extras){
         switch(type.toLowerCase()){
             // Register new InputView Classes with Extra Elements here
             case "choice":
@@ -23,7 +21,7 @@ public class InputViewFactory {
         }
     }
 
-    private static View createInputView(Context context, String type, List<Parcelable> inputList){
+    private static View createInputView(Context context, String type, List<Serializable> inputList){
         switch(type.toLowerCase()){
             // Register new InputView Classes here
             case "text":

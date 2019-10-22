@@ -1,7 +1,6 @@
 package nodomain.betchermartin.tensorflowlitescanner.customview.InputView;
 
 import android.content.Context;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -10,15 +9,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 
-import java.util.HashMap;
+import androidx.appcompat.app.AlertDialog;
+
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import nodomain.betchermartin.tensorflowlitescanner.R;
-import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 
 /**
  * Creates a View with an EditText that, on Click, spawns a Dialog with a configurable Number Wheel
@@ -29,7 +26,7 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
  *      "intervalMin"   : Minimum value
  */
 public class IntervalInputView extends InputView {
-    public IntervalInputView(Context context, List<Parcelable> listOfInputs, Map<String, Object> extras) {
+    public IntervalInputView(Context context, List<Serializable> listOfInputs, Map<String, Object> extras) {
         super(context, listOfInputs, extras);
     }
 
@@ -80,9 +77,9 @@ public class IntervalInputView extends InputView {
             @Override
             public void afterTextChanged(Editable s) {
                 if(listOfInputs.size() > 0) {
-                    ((IntegerParcelable) listOfInputs.get(0)).setValue(Integer.parseInt(s.toString()));
+                    listOfInputs.set(0, Integer.parseInt(s.toString()));
                 } else {
-                    listOfInputs.add(new IntegerParcelable(Integer.parseInt(s.toString())));
+                    listOfInputs.add(Integer.parseInt(s.toString()));
                 }
             }
         });

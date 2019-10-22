@@ -18,7 +18,6 @@ package nodomain.betchermartin.tensorflowlitescanner.kernels;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
-import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.Trace;
 import java.io.BufferedReader;
@@ -26,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import org.tensorflow.lite.gpu.GpuDelegate;
 public abstract class Classifier {
   private static final Logger LOGGER = new Logger();
   protected final Activity context;
-  protected Map<String, List<Parcelable>> metaData;
+  protected Map<String, List<Serializable>> metaData;
 
   /** The model type used for classification. */
   public enum Model {
@@ -97,7 +97,7 @@ public abstract class Classifier {
    * @param metaDataInput A Map of extra input objects.
    * @return A classifier with the desired configuration.
    */
-  public static Classifier create(Activity activity, Model model, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput)
+  public static Classifier create(Activity activity, Model model, Device device, int numThreads, Map<String, List<Serializable>> metaDataInput)
           throws IOException {
     switch(model){
       case DOMINIKMOBILENET:
@@ -182,7 +182,7 @@ public abstract class Classifier {
   }
 
   /** Initializes a {@code Classifier}. */
-  protected Classifier(Activity activity, Device device, int numThreads, Map<String, List<Parcelable>> metaDataInput) throws IOException {
+  protected Classifier(Activity activity, Device device, int numThreads, Map<String, List<Serializable>> metaDataInput) throws IOException {
     context = activity;
     tfliteModel = loadModelFile();
     switch (device) {

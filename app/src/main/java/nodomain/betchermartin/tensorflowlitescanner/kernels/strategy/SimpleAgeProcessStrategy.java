@@ -1,10 +1,7 @@
 package nodomain.betchermartin.tensorflowlitescanner.kernels.strategy;
 
-import android.os.Parcelable;
-
+import java.io.Serializable;
 import java.util.List;
-
-import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
 
 /**
  * Takes Integer input from the first element of the list,
@@ -12,7 +9,7 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.IntegerParcelable;
  */
 public class SimpleAgeProcessStrategy implements InputProcessStrategy {
     @Override
-    public float processInput(List<Parcelable> inputParameter, String ... args) {
-        return ((IntegerParcelable) inputParameter.get(0)).getValue() / 100.0f;
+    public float processInput(List<Serializable> inputParameter, String ... args) {
+        return (Integer) inputParameter.get(0) / 100.0f;
     }
 }

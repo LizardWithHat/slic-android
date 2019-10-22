@@ -1,10 +1,7 @@
 package nodomain.betchermartin.tensorflowlitescanner.kernels.strategy;
 
-import android.os.Parcelable;
-
+import java.io.Serializable;
 import java.util.List;
-
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 
 /**
  * Evauluates a String input from the first element in the list
@@ -12,7 +9,7 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
  */
 public class SimpleSexProcessStrategy implements InputProcessStrategy {
     @Override
-    public float processInput(List<Parcelable> inputParameter, String ... args) {
-        return ((StringParcelable) inputParameter.get(0)).getValue().equals("female") ? 0.0f : 1.0f;
+    public float processInput(List<Serializable> inputParameter, String ... args) {
+        return inputParameter.get(0).equals("female") ? 0.0f : 1.0f;
     }
 }

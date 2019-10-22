@@ -4,11 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,12 +15,15 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,15 +34,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import androidx.fragment.app.Fragment;
-
 import nodomain.betchermartin.tensorflowlitescanner.R;
 import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.CameraActivity;
 import nodomain.betchermartin.tensorflowlitescanner.cameraclassifier.ClassifierActivity;
 import nodomain.betchermartin.tensorflowlitescanner.customview.InputView.InputViewFactory;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.Classifier;
+import nodomain.betchermartin.tensorflowlitescanner.misc.LinkedHashMapWrapper;
 
 public class PatientDataInputFragment extends Fragment {
 
@@ -54,7 +51,7 @@ public class PatientDataInputFragment extends Fragment {
     private Context parent;
     private Classifier.Model chosenModel;
 
-    private LinkedHashMap<String, List<Parcelable>> patientData;
+    private LinkedHashMap<String, List<Serializable>> patientData;
     private LinkedHashMap<String, HashMap<String, Object>> inputItemExtras;
     private ListView lwDataDetails;
 
@@ -110,7 +107,7 @@ public class PatientDataInputFragment extends Fragment {
 
                 // Eingaben versenden
                 Intent classifierIntent = new Intent(parent, ClassifierActivity.class);
-                classifierIntent.putExtra(RESULT_STRING, patientData);
+                classifierIntent.putExtra(RESULT_STRING, new LinkedHashMapWrapper<>(patientData));
                 classifierIntent.putExtra(CameraActivity.CHOSENMODEL, chosenModel.toString());
                 startActivity(classifierIntent);
             }
@@ -120,17 +117,17 @@ public class PatientDataInputFragment extends Fragment {
     private void createHeaderFromJson(String filename) {
         // Erzeuge Header für einzigartige Schlüssel / Bild-ID Spalte
         // und erzeuge einzigartige Patient ID
-        List<Parcelable> patientIdList = new LinkedList<Parcelable>();
-        patientIdList.add(new StringParcelable(System.currentTimeMillis() + "_" +
-                sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)")));
+        List<Serializable> patientIdList = new LinkedList<Serializable>();
+        patientIdList.add(System.currentTimeMillis() + "_" +
+                sharedPreferences.getString("UNIQUE_INSTALL", "(NULL)"));
         patientData.put("patient_id", patientIdList);
         HashMap<String, Object> patientIdExtras = new HashMap<>();
         patientIdExtras.put("description", "Patienten ID");
         patientIdExtras.put("type", "generatedtext");
         inputItemExtras.put("patient_id", patientIdExtras);
 
-        List<Parcelable> pictureIdList = new LinkedList<Parcelable>();
-        pictureIdList.add(new StringParcelable(""));
+        List<Serializable> pictureIdList = new LinkedList<Serializable>();
+        pictureIdList.add("");
         patientData.put("picture_id", pictureIdList);
         HashMap<String, Object> pictureIdExtras = new HashMap<>();
         pictureIdExtras.put("description", "Bild ID");
@@ -153,7 +150,7 @@ public class PatientDataInputFragment extends Fragment {
             while(rootIterator.hasNext()){
                 String key = rootIterator.next();
 
-                List<Parcelable> keyList = new LinkedList<Parcelable>();
+                List<Serializable> keyList = new LinkedList<Serializable>();
                 patientData.put(key, keyList);
                 HashMap<String, Object> childExtras = new HashMap<>();
                 inputItemExtras.put(key, childExtras);
@@ -189,7 +186,7 @@ public class PatientDataInputFragment extends Fragment {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent){
-            List<Parcelable> dataInputList = patientData.get(data.get(position));
+            List<Serializable> dataInputList = patientData.get(data.get(position));
             Map<String, Object> dataExtras = inputItemExtras.get(data.get(position));
             ViewHolder vh;
             vh = new ViewHolder();

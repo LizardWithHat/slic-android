@@ -1,7 +1,6 @@
 package nodomain.betchermartin.tensorflowlitescanner.customview.InputView;
 
 import android.content.Context;
-import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -11,15 +10,13 @@ import android.widget.LinearLayout;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import nodomain.betchermartin.tensorflowlitescanner.R;
-import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
 
 /**
  * Creates a View with an EditText that, on Click, spawns a Dialog with a configurable List of
@@ -28,7 +25,7 @@ import nodomain.betchermartin.tensorflowlitescanner.misc.StringParcelable;
  *      "choices"          : all available choices
  */
 public class ChoiceInputView extends InputView {
-    public ChoiceInputView(Context context, List<Parcelable> listOfInputs, Map<String, Object> extras) {
+    public ChoiceInputView(Context context, List<Serializable> listOfInputs, Map<String, Object> extras) {
         super(context, listOfInputs, extras);
     }
 
@@ -74,9 +71,9 @@ public class ChoiceInputView extends InputView {
             @Override
             public void afterTextChanged(Editable s) {
                 if(listOfInputs.size() > 0) {
-                    ((StringParcelable) listOfInputs.get(0)).setValue(s.toString());
+                    listOfInputs.set(0, s.toString());
                 } else {
-                    listOfInputs.add(new StringParcelable(s.toString()));
+                    listOfInputs.add(s.toString());
                 }
             }
         });

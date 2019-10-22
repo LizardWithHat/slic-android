@@ -1,10 +1,9 @@
 package nodomain.betchermartin.tensorflowlitescanner.metadatawriter;
 
-import android.os.Parcelable;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +25,7 @@ public class CsvFileWriter implements MetaDataWriterInterface {
     }
 
     @Override
-    public boolean writeMetaData(LinkedHashMap<String, List<Parcelable>> listOfObjects) {
+    public boolean writeMetaData(LinkedHashMap<String, List<Serializable>> listOfObjects) {
         if(!csvFile.exists()) writeHeaderLine(listOfObjects.keySet());
         if(csvFile != null){
             FileWriter csvWriter;
@@ -36,7 +35,7 @@ public class CsvFileWriter implements MetaDataWriterInterface {
                 // Write Line Cells
                 for(String key : listOfObjects.keySet()){
                     // Write multiple Items in Cell
-                    for(Parcelable item : listOfObjects.get(key)){
+                    for(Serializable item : listOfObjects.get(key)){
                         if(sb.length() == 0 || sb.charAt(sb.length() - 1) == ','){
                             sb.append(item.toString());
                         }else {
