@@ -29,9 +29,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import nodomain.betchermartin.tensorflowlitescanner.dataInput.PatientDataInputActivity;
+import nodomain.betchermartin.tensorflowlitescanner.updater.AppUpdaterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.updater.KernelUpdaterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
-import nodomain.betchermartin.tensorflowlitescanner.updater.MockKernelUpdater;
+import nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateService.WorkManagerAppUpdater;
+import nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateService.WorkManagerKernelUpdater;
 
 public class LandingPageActivity extends AppCompatActivity {
 
@@ -46,7 +48,8 @@ public class LandingPageActivity extends AppCompatActivity {
     private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
     private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
     private static final int PERMISSIONS_REQUEST = 1;
-    private KernelUpdaterInterface updater;
+    private KernelUpdaterInterface kernelUpdater;
+    private AppUpdaterInterface appUpdater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +59,8 @@ public class LandingPageActivity extends AppCompatActivity {
         if (!hasPermission()) {
             requestPermission();
         }
-        updater = new MockKernelUpdater(this);
+        appUpdater = new WorkManagerAppUpdater(this.getApplicationContext());
+        kernelUpdater = new WorkManagerKernelUpdater(this.getApplicationContext());
         createNotificationChannel();
     }
 
@@ -127,9 +131,9 @@ public class LandingPageActivity extends AppCompatActivity {
             // Automatic update only on Wifi/Ethernet connection, otherwise only search for updates
             if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
                     connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                updater.updateAllKernels();
+                kernelUpdater.updateAllKernels();
             } else {
-                updater.searchAllUpdates();
+                kernelUpdater.searchAllUpdates();
             }
         }
     }
