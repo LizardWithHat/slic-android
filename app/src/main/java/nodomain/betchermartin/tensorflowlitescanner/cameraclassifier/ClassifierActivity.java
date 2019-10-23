@@ -119,8 +119,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
       });
 
       // Ordner anlegen und .nomedia hinterlegen, falls neu angelegt
-      destination = new File(Environment.getExternalStorageDirectory(), "SkinCancerScanner");
-      if (destination.mkdir()){
+      destination = new File(getExternalFilesDir(null), "out");
+      if (destination.mkdirs()){
           File nomedia = new File(destination, ".nomedia");
           try {
               nomedia.createNewFile();

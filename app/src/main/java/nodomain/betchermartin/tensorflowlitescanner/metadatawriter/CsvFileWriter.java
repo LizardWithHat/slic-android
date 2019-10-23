@@ -17,6 +17,7 @@ public class CsvFileWriter implements MetaDataWriterInterface {
 
     private CsvFileWriter(File destination){
         this.csvFile = new File(destination, "metadata_"+System.currentTimeMillis()+".csv");
+        csvFile.getParentFile().mkdirs();
     }
 
     public static CsvFileWriter getInstance(File destination){

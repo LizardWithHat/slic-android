@@ -26,7 +26,7 @@ public class LocalDataSender implements DataSenderInterface {
         File archiveFolder = new File(sourceFolder, "out_fake_send");
         File archiveFile = new File(archiveFolder, "archive_"+System.currentTimeMillis()+".zip");
         File[] toBeArchived = sourceFolder.listFiles();
-        archiveFolder.mkdir();
+        archiveFolder.mkdirs();
         BufferedInputStream in;
         FileOutputStream fileOut;
         ZipOutputStream zipOut;
