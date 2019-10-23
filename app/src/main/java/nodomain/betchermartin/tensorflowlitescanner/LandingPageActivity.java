@@ -37,6 +37,8 @@ import nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateSer
 
 public class LandingPageActivity extends AppCompatActivity {
 
+    private static final int BUFFER_SIZE = 1024 * 4;
+
     private static final Logger LOGGER = new Logger();
 
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
@@ -83,30 +85,36 @@ public class LandingPageActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             // invoke initial Setup, copying Kernel Assets to External Dirs
             File kernelDir = new File(getExternalFilesDir(null), "kernels");
-            AssetManager assetManager = getResources().getAssets();
             ZipEntry zipEntry;
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int length;
+            ZipInputStream zipInputStream = null;
+            FileOutputStream fileOutputStream = null;
             try {
-                ZipInputStream inputStream = new ZipInputStream(assetManager.open("kernels.zip"));
-                while((zipEntry = inputStream.getNextEntry()) != null){
+                zipInputStream = new ZipInputStream(getAssets().open("kernels.zip"));
+                while((zipEntry = zipInputStream.getNextEntry()) != null){
                     if(zipEntry.isDirectory()) {
                         new File(kernelDir, zipEntry.getName()).mkdirs();
                         continue;
                     }
-                    FileOutputStream fileOutputStream = null;
                     fileOutputStream = new FileOutputStream(kernelDir + File.separator + zipEntry.getName());
-                    while ((length = inputStream.read(buffer)) > 0) {
+                    while ((length = zipInputStream.read(buffer, 0, buffer.length)) != -1) {
                         fileOutputStream.write(buffer, 0, length);
                     }
-
                 }
             }catch (FileNotFoundException e) {
-                e.printStackTrace();
+                LOGGER.e("Error while unzipping, FileNotFound: %s", e.getMessage());
                 return false;
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.e("Error while unzipping, IOException: %s", e.getMessage());
                 return false;
+            } finally {
+                try {
+                    if(zipInputStream != null) zipInputStream.close();
+                    if(fileOutputStream != null) fileOutputStream.close();
+                } catch (IOException e) {
+                    LOGGER.e("Error while closing streams, IOException: %s", e.getMessage());
+                }
             }
             return true;
         }
