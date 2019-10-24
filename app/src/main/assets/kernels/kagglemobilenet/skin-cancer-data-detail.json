@@ -1,0 +1,49 @@
+{
+  "data_details": {
+    "dx": {
+      "description": "Diagnose" ,
+      "type": "text"
+    } ,
+    "dx_type": {
+      "description": "Diagnosetyp" ,
+      "type": "text"
+    } ,
+    "age": {
+      "description": "Alter" ,
+      "type": "interval" ,
+      "intervalMin": 0,
+      "intervalMax": 85,
+      "step": 5
+    } ,
+    "sex": {
+      "description": "Geschlecht" ,
+      "type": "choice" ,
+      "values": [
+        "unknown" ,
+        "female" ,
+        "male"
+      ]
+    } ,
+    "localization": {
+      "description": "Lokalisierung" ,
+      "type": "choice" ,
+      "values": [
+        "scalp" ,
+        "ear" ,
+        "face" ,
+        "back" ,
+        "trunk" ,
+        "chest" ,
+        "upper extremity" ,
+        "abdomen" ,
+        "unknown" ,
+        "lower extremity" ,
+        "genital" ,
+        "neck" ,
+        "hand" ,
+        "foot" ,
+        "acral"
+      ]
+    }
+  }
+}

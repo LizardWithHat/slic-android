@@ -35,7 +35,7 @@ public class WorkManagerKernelUpdater implements KernelUpdaterInterface {
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
-        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(AppUpdaterWorker.class, 7, TimeUnit.DAYS)
+        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(KernelUpdaterWorker.class, 7, TimeUnit.DAYS)
                 .setConstraints(updateWorkerConstraints)
                 .setInputData(new Data.Builder().putBoolean(KernelUpdaterWorker.CHECK_ONLY, true).build())
                 .build();
@@ -51,7 +51,7 @@ public class WorkManagerKernelUpdater implements KernelUpdaterInterface {
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
-        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(AppUpdaterWorker.class, 7, TimeUnit.DAYS)
+        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(KernelUpdaterWorker.class, 7, TimeUnit.DAYS)
                 .setConstraints(updateWorkerConstraints)
                 .setInputData(new Data.Builder()
                         .putBoolean(KernelUpdaterWorker.CHECK_ONLY, true)
@@ -70,7 +70,7 @@ public class WorkManagerKernelUpdater implements KernelUpdaterInterface {
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
-        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(AppUpdaterWorker.class, 7, TimeUnit.DAYS)
+        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(KernelUpdaterWorker.class, 7, TimeUnit.DAYS)
                 .setConstraints(updateWorkerConstraints)
                 .build();
 
@@ -84,7 +84,7 @@ public class WorkManagerKernelUpdater implements KernelUpdaterInterface {
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
-        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(AppUpdaterWorker.class, 7, TimeUnit.DAYS)
+        PeriodicWorkRequest updateWorker = new PeriodicWorkRequest.Builder(KernelUpdaterWorker.class, 7, TimeUnit.DAYS)
                 .setConstraints(updateWorkerConstraints)
                 .setInputData(new Data.Builder()
                         .putString(KERNEL_NAME_KEY, kernel.toString())

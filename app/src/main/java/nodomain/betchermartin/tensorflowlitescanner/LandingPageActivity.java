@@ -17,21 +17,20 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import nodomain.betchermartin.tensorflowlitescanner.dataInput.PatientDataInputActivity;
+import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.updater.AppUpdaterInterface;
 import nodomain.betchermartin.tensorflowlitescanner.updater.KernelUpdaterInterface;
-import nodomain.betchermartin.tensorflowlitescanner.env.Logger;
 import nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateService.WorkManagerAppUpdater;
 import nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateService.WorkManagerKernelUpdater;
 
@@ -43,12 +42,6 @@ public class LandingPageActivity extends AppCompatActivity {
 
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
     // Kamera Genehmigung impliziert auch Licht/Blitz Nutzung
-    // private static final String PERMISSION_FLASHLIGHT = Manifest.permission.FLASHLIGHT;
-    private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    // Um den Webserver zu benutzen muss die WiFi Nutzung genehmigt werden.
-    private static final String PERMISSION_WIFI = Manifest.permission.ACCESS_WIFI_STATE;
-    private static final String PERMISSION_INTERNET = Manifest.permission.INTERNET;
-    private static final String PERMISSION_NETWORK = Manifest.permission.ACCESS_NETWORK_STATE;
     private static final int PERMISSIONS_REQUEST = 1;
     private KernelUpdaterInterface kernelUpdater;
     private AppUpdaterInterface appUpdater;
@@ -57,10 +50,6 @@ public class LandingPageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing_page);
-
-        if (!hasPermission()) {
-            requestPermission();
-        }
         appUpdater = new WorkManagerAppUpdater(this.getApplicationContext());
         kernelUpdater = new WorkManagerKernelUpdater(this.getApplicationContext());
         createNotificationChannel();
@@ -75,7 +64,7 @@ public class LandingPageActivity extends AppCompatActivity {
             AsyncTask<Void, Void, Boolean> assetCopier = new AssetCopier();
             assetCopier.execute();
         } else {
-            exitLandingPage();
+            preparePermissions();
         }
     }
 
@@ -83,40 +72,66 @@ public class LandingPageActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            // invoke initial Setup, copying Kernel Assets to External Dirs
-            File kernelDir = new File(getExternalFilesDir(null), "kernels");
-            ZipEntry zipEntry;
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int length;
-            ZipInputStream zipInputStream = null;
-            FileOutputStream fileOutputStream = null;
+            // Copy assets and subfolders to external files dir
+            // from: https://stackoverflow.com/a/25988391
             try {
-                zipInputStream = new ZipInputStream(getAssets().open("kernels.zip"));
-                while((zipEntry = zipInputStream.getNextEntry()) != null){
-                    if(zipEntry.isDirectory()) {
-                        new File(kernelDir, zipEntry.getName()).mkdirs();
-                        continue;
-                    }
-                    fileOutputStream = new FileOutputStream(kernelDir + File.separator + zipEntry.getName());
-                    while ((length = zipInputStream.read(buffer, 0, buffer.length)) != -1) {
-                        fileOutputStream.write(buffer, 0, length);
-                    }
-                }
-            }catch (FileNotFoundException e) {
-                LOGGER.e("Error while unzipping, FileNotFound: %s", e.getMessage());
-                return false;
+                copyDirorfileFromAssetManager("kernels", "kernels");
             } catch (IOException e) {
-                LOGGER.e("Error while unzipping, IOException: %s", e.getMessage());
-                return false;
-            } finally {
-                try {
-                    if(zipInputStream != null) zipInputStream.close();
-                    if(fileOutputStream != null) fileOutputStream.close();
-                } catch (IOException e) {
-                    LOGGER.e("Error while closing streams, IOException: %s", e.getMessage());
-                }
+                LOGGER.e("Error while copying Assets: %s", e.getMessage());
             }
             return true;
+        }
+
+        private void copyDirorfileFromAssetManager(String arg_assetDir, String arg_destinationDir) throws IOException{
+            File sd_path = getExternalFilesDir(null);
+            String dest_dir_path = sd_path + File.separator + arg_destinationDir;
+            File dest_dir = new File(dest_dir_path);
+
+            createDir(dest_dir);
+
+            AssetManager asset_manager = getApplicationContext().getAssets();
+            String[] files = asset_manager.list(arg_assetDir);
+
+            for(String asset_file_name : files){
+                String abs_asset_file_path = arg_assetDir + File.separator + asset_file_name;
+                String sub_files[] = asset_manager.list(abs_asset_file_path);
+
+                if (sub_files.length == 0){
+                    // It is a file
+                    String dest_file_path = dest_dir_path + File.separator + asset_file_name;
+                    copyAssetFile(abs_asset_file_path, dest_file_path);
+                } else {
+                    // It is a sub directory
+                    copyDirorfileFromAssetManager(abs_asset_file_path, arg_destinationDir + File.separator + asset_file_name);
+                }
+            }
+
+        }
+
+
+        private void copyAssetFile(String assetFilePath, String destinationFilePath) throws IOException{
+            InputStream in = getApplicationContext().getAssets().open(assetFilePath);
+            OutputStream out = new FileOutputStream(destinationFilePath);
+
+            byte[] buf = new byte[BUFFER_SIZE];
+            int len;
+            while ((len = in.read(buf)) > 0)
+                out.write(buf, 0, len);
+            in.close();
+            out.close();
+        }
+
+        private void createDir(File dir) throws IOException{
+            if (dir.exists()){
+                if (!dir.isDirectory()){
+                    throw new IOException("Can't create directory, a file is in the way");
+                }
+            } else{
+                dir.mkdirs();
+                if (!dir.isDirectory()){
+                    throw new IOException("Unable to create directory");
+                }
+            }
         }
 
         @Override
@@ -124,7 +139,7 @@ public class LandingPageActivity extends AppCompatActivity {
             if(result){
                 PreferenceManager.getDefaultSharedPreferences(LandingPageActivity.this).edit()
                         .putBoolean(getString(R.string.initialSetup), true).commit();
-                exitLandingPage();
+                preparePermissions();
             } else {
                 Toast.makeText(LandingPageActivity.this, "Copying Assets failed, abort.", Toast.LENGTH_SHORT).show();
                 finish();
@@ -133,17 +148,15 @@ public class LandingPageActivity extends AppCompatActivity {
     }
 
     private void startBackgroundUpdate() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Network[] networks = connectivityManager.getAllNetworks();
-        for(Network network : networks){
-            // Automatic update only on Wifi/Ethernet connection, otherwise only search for updates
-            if (connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                    connectivityManager.getNetworkCapabilities(network).hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                kernelUpdater.updateAllKernels();
-            } else {
-                kernelUpdater.searchAllUpdates();
-            }
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if(sharedPreferences.getBoolean(getString(R.string.app_updater_switch_preference_key), true))
+            appUpdater.checkAppVersion();
+        if(sharedPreferences.getBoolean(getString(R.string.kernel_updater_switch_install_preference_key), true)){
+            kernelUpdater.updateAllKernels();
+        } else if (sharedPreferences.getBoolean(getString(R.string.kernel_updater_switch_install_preference_key), true)) {
+            kernelUpdater.searchAllUpdates();
         }
+
     }
 
     private void createNotificationChannel() {
@@ -164,23 +177,17 @@ public class LandingPageActivity extends AppCompatActivity {
             final int requestCode, final String[] permissions, final int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST) {
             if (grantResults.length <= 0
-                    && grantResults[0] == PackageManager.PERMISSION_DENIED
-                    && grantResults[1] == PackageManager.PERMISSION_DENIED
-                    && grantResults[2] == PackageManager.PERMISSION_DENIED
-                    && grantResults[3] == PackageManager.PERMISSION_DENIED
-                    && grantResults[4] == PackageManager.PERMISSION_DENIED) {
+                    || grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 requestPermission();
+            } else {
+                exitActivity();
             }
         }
     }
 
     private boolean hasPermission() {
-        return ContextCompat.checkSelfPermission(this, PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_WIFI) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_INTERNET) == PackageManager.PERMISSION_GRANTED &
-                ContextCompat.checkSelfPermission(this, PERMISSION_NETWORK) == PackageManager.PERMISSION_GRANTED;
-    }
+        return ContextCompat.checkSelfPermission(this, PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED;
+}
 
     private void requestPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, PERMISSION_CAMERA)) {
@@ -190,10 +197,18 @@ public class LandingPageActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG)
                     .show();
         }
-        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA, PERMISSION_STORAGE, PERMISSION_WIFI}, PERMISSIONS_REQUEST);
+        ActivityCompat.requestPermissions(this, new String[] {PERMISSION_CAMERA}, PERMISSIONS_REQUEST);
     }
 
-    private void exitLandingPage(){
+    private void preparePermissions(){
+        if(!hasPermission()) {
+            requestPermission();
+        } else {
+            exitActivity();
+        }
+    }
+
+    private void exitActivity(){
         startBackgroundUpdate();
         Intent patientInputIntent = new Intent(this, PatientDataInputActivity.class);
         patientInputIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
