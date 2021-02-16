@@ -11,3 +11,5 @@
 
 /.gradle/
 /.idea/
+.project
+.settings/org.eclipse.buildship.core.prefs

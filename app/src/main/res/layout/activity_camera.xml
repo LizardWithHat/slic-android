@@ -59,15 +59,7 @@
             android:background="@color/semi_transparent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/targetLayout">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/seelab_logo" />
-        </androidx.appcompat.widget.Toolbar>
+            app:layout_constraintTop_toTopOf="@+id/targetLayout"/>
 
         <ImageButton
             android:id="@+id/butFlashToggle"

@@ -22,14 +22,14 @@ public class KernelUpdaterWorker extends Worker {
     public Result doWork() {
         boolean versionCheckOnly = getInputData().getBoolean(CHECK_ONLY, false);
         String notifMessage = "Dies ist ein Mock-Kernel-Update!";
-        if(versionCheckOnly) notifMessage = "Dies ist ein Mock-Kernel-Update-Check!";
+        if(versionCheckOnly) notifMessage = "Dies ist ein Mock-Modell-Update-Check!";
         Context context = getApplicationContext();
         NotificationManagerCompat notifManager = NotificationManagerCompat.from(context);
         int notifId = (int) (Math.random() * 100.0);
         NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(context, context.getString(R.string.channel_id))
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentText(notifMessage)
-                .setContentTitle("Seelab-Scanner - Mock Update")
+                .setContentTitle("SLIC - Mock Update")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         notifManager.notify(notifId, notifBuilder.build());

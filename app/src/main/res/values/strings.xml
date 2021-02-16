@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Seelab Skin Cancer Scanner</string>
+    <string name="app_name">SLIC</string>
     <string name="description_info">Info</string>
     <string name="request_permission">Diese App benötigt Zugriff auf die Kamera.</string>
     <string name="camera_error">Dieses Gerät unterstützt nicht die Camera2 API.</string>
@@ -42,9 +42,9 @@
         <item>GPU</item>
         <item>NNAPI</item>
     </string-array>
-    <string name="channel_id" translatable="false">SeelabScannerChannelID</string>
-    <string name="notification_name" translatable="false">SeelabScannerNotificationID</string>
-    <string name="notification_description" translatable="false">Seelab-Scanner Notification ID</string>
+    <string name="channel_id" translatable="false">SLICChannelID</string>
+    <string name="notification_name" translatable="false">SLICNotificationID</string>
+    <string name="notification_description" translatable="false">SLIC Notification ID</string>
     <string name="initialSetup" translatable="false">initialSetupKey</string>
     <string name="allow_updates_preference_key" translatable="false">allow_updates_preference_key</string>
     <string name="loading">Lade…</string>
@@ -56,13 +56,13 @@
     <string name="app_updater_server_preference_title">Server für App Updates</string>
     <string name="app_updater_server_preference_key" translatable="false">app_updater_server_preference_key</string>
 
-    <string name="kernel_updater_switch_preference_title">Kernel Updates automatisch suchen</string>
+    <string name="kernel_updater_switch_preference_title">Modell Updates automatisch suchen</string>
     <string name="kernel_updater_switch_preference_key" translatable="false">kernel_updater_switch_preference_key</string>
-    <string name="kernel_updater_switch_install_preference_title">Kernel Updates automatisch installieren</string>
+    <string name="kernel_updater_switch_install_preference_title">Modell Updates automatisch installieren</string>
     <string name="kernel_updater_switch_install_preference_key" translatable="false">kernel_updater_switch_install_preference_key</string>
-    <string name="kernel_updater_interval_preference_title">Kernel Update Such-Intervall</string>
+    <string name="kernel_updater_interval_preference_title">Modell Update Such-Intervall</string>
     <string name="kernel_updater_interval_preference_key" translatable="false">kernel_updater_interval_preference_key</string>
-    <string name="kernel_updater_server_preference_title">Server für Kernel Updates</string>
+    <string name="kernel_updater_server_preference_title">Server für Modell Updates</string>
     <string name="kernel_updater_server_preference_key" translatable="false">kernel_updater_server_preference_key</string>
     <string name="updater_preferences_category_title">Update Einstellungen</string>
 </resources>

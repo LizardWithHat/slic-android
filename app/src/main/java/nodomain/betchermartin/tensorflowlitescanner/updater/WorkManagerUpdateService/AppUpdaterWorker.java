@@ -28,7 +28,7 @@ public class AppUpdaterWorker extends Worker {
         NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(context, context.getString(R.string.channel_id))
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContentText(notifMessage)
-                .setContentTitle("Seelab-Scanner - Mock Update")
+                .setContentTitle("SLIC - Mock Update")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         notifManager.notify(notifId, notifBuilder.build());
