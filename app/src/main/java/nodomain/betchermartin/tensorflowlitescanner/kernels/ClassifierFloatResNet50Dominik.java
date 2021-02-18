@@ -28,6 +28,10 @@ import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.InputProces
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleAgeProcessStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleSexProcessStrategy;
 import nodomain.betchermartin.tensorflowlitescanner.kernels.strategy.SimpleStringComparisonStrategy;
+/**
+ * This Classifiers Tensorflow Lite file is missing because of GitHubs large file restriction,
+ * however, it shows how to use strategies to handle different kinds of metadata.
+ */
 
 /** This TensorFlowLite classifier works with the float ResNet50 model. */
 public class ClassifierFloatResNet50Dominik extends Classifier {

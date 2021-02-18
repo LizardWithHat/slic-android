@@ -47,8 +47,7 @@ public abstract class Classifier {
   /** The model type used for classification. */
   public enum Model {
     DOMINIKMOBILENET,
-    KAGGLEMOBILENET,
-    DOMINIKRESNET50,
+    KAGGLEMOBILENET
   }
 
   /** The runtime device type used for executing classification. */
@@ -104,8 +103,6 @@ public abstract class Classifier {
         return new ClassifierFloatMobileNetDominik(activity, device, numThreads, metaDataInput);
       case KAGGLEMOBILENET:
         return new ClassifierFloatMobileNetKaggle(activity, device, numThreads, metaDataInput);
-      case DOMINIKRESNET50:
-        return new ClassifierFloatResNet50Dominik(activity, device, numThreads, metaDataInput);
       default:
         throw new IOException("Invalid Classifier Class");
     }
