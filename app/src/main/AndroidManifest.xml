@@ -22,8 +22,10 @@
         android:label="@string/activity_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
+        android:testOnly="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".updater.WorkManagerUpdateService.AppUpdateActivity" />
         <activity android:name=".dataInput.PatientDataInputActivity" />
         <activity
             android:name=".LandingPageActivity"

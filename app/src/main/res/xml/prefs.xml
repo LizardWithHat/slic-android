@@ -45,7 +45,7 @@
         <EditTextPreference
             android:key="@string/app_updater_server_preference_key"
             android:title="@string/app_updater_server_preference_title"
-            android:defaultValue="http://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1"
+            android:defaultValue="https://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1"
             android:dependency="@string/app_updater_switch_preference_key"/>
 
 

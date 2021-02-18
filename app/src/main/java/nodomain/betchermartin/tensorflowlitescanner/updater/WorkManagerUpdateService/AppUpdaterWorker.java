@@ -1,6 +1,8 @@
 package nodomain.betchermartin.tensorflowlitescanner.updater.WorkManagerUpdateService;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -40,7 +42,7 @@ public class AppUpdaterWorker extends Worker {
         String currVersion = BuildConfig.VERSION_NAME;
         String onlineVersion = "unavailable";
         try {
-            onlineVersion = getOnlineVersion(new URL(sharedPreferences.getString("app_updater_server_preference_key", "http://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1")));
+            onlineVersion = getOnlineVersion(new URL(sharedPreferences.getString("app_updater_server_preference_key", "https://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1")));
         } catch (MalformedURLException e) {
             Log.e("AppUpdaterWorker", e.getMessage());
         }
@@ -53,13 +55,14 @@ public class AppUpdaterWorker extends Worker {
             Context context = getApplicationContext();
             NotificationManagerCompat notifManager = NotificationManagerCompat.from(context);
             int notifId = (int) (Math.random() * 100.0);
-            //Intent pendingIntent = new Intent();
+            Intent updateIntent = new Intent(getApplicationContext(), AppUpdateActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, updateIntent, PendingIntent.FLAG_ONE_SHOT);
             NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(context, context.getString(R.string.channel_id))
                     .setSmallIcon(android.R.drawable.sym_def_app_icon)
                     .setContentText(notifMessage)
                     .setContentTitle("SLIC - App Update")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    //.setContentIntent(pendingIntent)
+                    .setContentIntent(pendingIntent)
                     .setAutoCancel(true);
             notifManager.notify(notifId, notifBuilder.build());
         }
