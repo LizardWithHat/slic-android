@@ -26,6 +26,12 @@
             android:title="@string/collect_data_preference_text"
             android:defaultValue="true"/>/>
 
+        <EditTextPreference
+            android:key="@string/send_data_preference_server_key"
+            android:title="@string/send_data_preference_server_text"
+            android:defaultValue="none"
+            android:dependency="@string/send_data_preference_key"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -69,7 +75,7 @@
         <EditTextPreference
             android:key="@string/kernel_updater_server_preference_key"
             android:title="@string/kernel_updater_server_preference_title"
-            android:defaultValue="0.0.0.0"
+            android:defaultValue="none"
             android:dependency="@string/kernel_updater_switch_preference_key"/>
 
 

@@ -21,6 +21,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import nodomain.betchermartin.tensorflowlitescanner.R;
+
 public class AppUpdateActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +33,8 @@ public class AppUpdateActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         try {
-            URL repoURL = new URL(sharedPreferences.getString("app_updater_server_preference_key", "https://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1"));
+            URL repoURL = new URL(sharedPreferences.getString(getString(R.string.app_updater_server_preference_key),
+                    "https://api.github.com/repos/lizardwithhat/slic-android/releases?per_page=1"));
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             DownloadManager.Request downloadRequest = new DownloadManager.Request(Uri.parse(getDownloadURL(repoURL)));
             downloadRequest.setTitle("SLIC Update Download");

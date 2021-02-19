@@ -65,4 +65,6 @@
     <string name="kernel_updater_server_preference_title">Server für Modell Updates</string>
     <string name="kernel_updater_server_preference_key" translatable="false">kernel_updater_server_preference_key</string>
     <string name="updater_preferences_category_title">Update Einstellungen</string>
+    <string name="send_data_preference_server_key">send_data_preference_server_key</string>
+    <string name="send_data_preference_server_text">Server für Datenannahme</string>
 </resources>

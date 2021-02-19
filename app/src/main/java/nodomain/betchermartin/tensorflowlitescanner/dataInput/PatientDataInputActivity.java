@@ -59,8 +59,10 @@ public class PatientDataInputActivity extends AppCompatActivity implements Adapt
             File sourceDir = getExternalFilesDir(null);
             if (PreferenceManager.getDefaultSharedPreferences(this)
                     .getBoolean(getString(R.string.send_data_preference_key), true)
-                    && sourceDir.exists())
+                    && sourceDir.exists()) {
                 dataSender.compressFiles(new File(sourceDir, "out"));
+                dataSender.sendData(getString(R.string.send_data_preference_server_key));
+            }
         }
         super.onDestroy();
     }
